@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, Utensils, Droplet, Activity } from 'lucide-react';
+import { Camera, Utensils, Droplet, Activity, Moon } from 'lucide-react';
 import { CheckCircle2 } from 'lucide-react';
 
 // A reusable small check button with toggle state
@@ -10,7 +10,7 @@ function SmallCheck({ label }) {
       aria-label={label}
       onClick={() => setDone(d => !d)}
       className={[
-        'w-[34px] h-[34px] min-w-[34px] min-h-[34px] rounded-full border-0 flex items-center justify-center transition-colors duration-200',
+        'w-[34px] h-[34px] min-w-[34px] min-h-[34px] rounded-full border-0 flex items-center justify-center transition-all duration-300 ease-in-out active:scale-95',
         done ? 'bg-[#cbeade]' : 'bg-[#eff5f1]',
       ].join(' ')}
     >
@@ -28,7 +28,7 @@ function QuickAction({ Icon, color, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="min-h-[86px] border border-[#e2e8e4] bg-white rounded-[8px] py-[9px] px-[5px] grid justify-items-center gap-[8px] text-[#253532] text-[11px] font-[800] hover:bg-[#f5faf7] transition-colors"
+      className="min-h-[86px] bg-white rounded-2xl py-3 px-2 grid justify-items-center gap-2 text-[#253532] text-[11px] font-[800] hover:bg-[#f5faf7] shadow-lg shadow-black/5 border-0 transition-all duration-300 ease-in-out active:scale-95"
     >
       <Icon size={26} color={color} strokeWidth={2} />
       <span>{label}</span>
@@ -36,14 +36,29 @@ function QuickAction({ Icon, color, label, onClick }) {
   );
 }
 
+// Daily Metric Card
+function DailyMetric({ iconType, label, value, subtext, barColorClass, percent }) {
+  return (
+    <article className="min-w-0 rounded-2xl py-3 px-3 bg-white shadow-lg shadow-black/5 border-0 transition-all duration-300 ease-in-out hover:scale-[1.02]">
+      <div className={`metric-icon ${iconType}`} aria-hidden="true" />
+      <span className="block min-h-[26px] text-[#687872] text-[11px] leading-[1.15] font-[850]">{label}</span>
+      <strong className="block mt-[4px] text-[#17231f] text-[19px] leading-[1]">{value}</strong>
+      <p className="mt-[4px] text-[11px] leading-[1.2]">{subtext}</p>
+      <div className={`metric-bar ${barColorClass}`}>
+        <span style={{ width: `${percent}%` }} />
+      </div>
+    </article>
+  );
+}
+
 export default function HomeView({ onTabChange }) {
   return (
     <div
       id="home"
-      className="screen-scroll h-full overflow-y-auto px-[18px] pt-[16px] pb-[92px]"
+      className="screen-scroll h-full overflow-y-auto px-[24px] pt-[24px] pb-[100px]"
     >
       {/* App Header */}
-      <header className="flex justify-between items-center gap-[16px] mb-[18px]">
+      <header className="flex justify-between items-center gap-[16px] mb-[24px]">
         <div>
           <p className="m-0 mb-[5px] uppercase text-[11px] leading-[1.15] text-[#61716c] font-[850] tracking-[0]">
             INaAI companion
@@ -52,7 +67,7 @@ export default function HomeView({ onTabChange }) {
         </div>
         <button
           aria-label="Open profile"
-          className="w-[46px] h-[46px] min-w-[44px] min-h-[44px] rounded-full bg-[#1f6e64] text-white font-[850] border-0 text-[14px]"
+          className="w-[46px] h-[46px] min-w-[44px] min-h-[44px] rounded-full bg-[#1f6e64] text-white font-[850] border-0 text-[14px] shadow-lg shadow-[#1f6e64]/30 transition-all duration-300 ease-in-out active:scale-95"
         >
           JS
         </button>
@@ -60,7 +75,7 @@ export default function HomeView({ onTabChange }) {
 
       {/* Daily Signal Card */}
       <section
-        className="rounded-[8px] p-[18px] flex items-center gap-[16px] justify-between min-h-[150px] text-white"
+        className="rounded-3xl p-6 flex items-center gap-[16px] justify-between min-h-[150px] text-white shadow-lg shadow-black/10 transition-all duration-300 ease-in-out hover:scale-[1.02]"
         style={{
           background: 'linear-gradient(135deg, #173b35 0%, #2c7a70 58%, #e8b95f 100%)',
         }}
@@ -77,22 +92,30 @@ export default function HomeView({ onTabChange }) {
           </p>
         </div>
         {/* Readiness ring */}
-        <div className="signal-ring" aria-label="Readiness 74 percent">
+        <div className="signal-ring shadow-lg shadow-black/20" aria-label="Readiness 74 percent">
           <span className="text-white font-[900] text-[24px]">74</span>
         </div>
       </section>
 
+      {/* Daily Metrics */}
+      <section className="grid grid-cols-3 gap-3 mt-6" aria-label="Daily activity and calorie metrics">
+        <DailyMetric iconType="intake" label="Calories intake" value="1,542" subtext="of 2,100 kcal" barColorClass="" percent={73} />
+        <DailyMetric iconType="burned" label="Calories burned" value="486" subtext="active kcal" barColorClass="orange" percent={46} />
+        <DailyMetric iconType="steps" label="Steps tracker" value="6,284" subtext="of 8,000 steps" barColorClass="blue" percent={78} />
+      </section>
+
       {/* Quick Actions */}
-      <section className="grid grid-cols-4 gap-[8px] my-[14px]" aria-label="Quick actions">
-        <QuickAction Icon={Camera}   color="#236a61" label="Scan food"    onClick={() => onTabChange('scan')} />
-        <QuickAction Icon={Utensils} color="#d9893f" label="Meal plan"   onClick={() => onTabChange('plan')} />
-        <QuickAction Icon={Droplet}  color="#b84e5d" label="Anemia check" onClick={() => onTabChange('health')} />
-        <QuickAction Icon={Activity} color="#586bb5" label="Mood check"  onClick={() => onTabChange('mind')} />
+      <section className="grid grid-cols-5 gap-2 my-6" aria-label="Quick actions">
+        <QuickAction Icon={Camera}   color="#236a61" label="Scan"    onClick={() => onTabChange('scan')} />
+        <QuickAction Icon={Utensils} color="#d9893f" label="Plan"   onClick={() => onTabChange('plan')} />
+        <QuickAction Icon={Droplet}  color="#b84e5d" label="Anemia" onClick={() => onTabChange('health')} />
+        <QuickAction Icon={Activity} color="#586bb5" label="Mood"  onClick={() => onTabChange('mind')} />
+        <QuickAction Icon={Moon} color="#4f46e5" label="Sleep" onClick={() => onTabChange('sleep')} />
       </section>
 
       {/* Companion Plan */}
-      <section className="mt-[16px]">
-        <div className="flex justify-between items-baseline mb-[10px]">
+      <section className="mt-6">
+        <div className="flex justify-between items-baseline mb-4">
           <h2 className="text-[18px] leading-[1.16] font-[800]">Companion plan</h2>
           <span className="text-[#7a8a84] text-[12px] font-[800]">Auto adjusted</span>
         </div>
@@ -104,7 +127,7 @@ export default function HomeView({ onTabChange }) {
         ].map(({ time, title, desc, label }) => (
           <article
             key={time}
-            className="grid items-center bg-white border border-[#e4eae6] rounded-[8px] p-[12px] mb-[8px]"
+            className="grid items-center bg-white rounded-2xl p-4 mb-3 shadow-lg shadow-black/5 border-0 transition-all duration-300 ease-in-out hover:scale-[1.01]"
             style={{ gridTemplateColumns: '54px 1fr 36px', gap: '10px' }}
           >
             <div className="text-[#246e63] text-[12px] font-[900]">{time}</div>
@@ -117,18 +140,6 @@ export default function HomeView({ onTabChange }) {
         ))}
       </section>
 
-      {/* Community Strip */}
-      <section className="mt-[14px] rounded-[8px] p-[18px] flex items-center gap-[16px] justify-between bg-[#fff2d7]">
-        <div>
-          <p className="m-0 mb-[5px] uppercase text-[11px] leading-[1.15] text-[#61716c] font-[850] tracking-[0]">
-            Community challenge
-          </p>
-          <h2 className="text-[18px] leading-[1.16] font-[800]">#7 in Iron Week</h2>
-        </div>
-        <div className="w-[54px] h-[54px] grid place-items-center rounded-full bg-[#e39b45] text-white font-[900]">
-          +18
-        </div>
-      </section>
     </div>
   );
 }

@@ -93,7 +93,161 @@ input[type="range"] {
   display: block;
 }
 
-/* Small check button done state */
-.check-btn-done {
-  background-color: #cbeade !important;
+/* Metric icons */
+.metric-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  margin-bottom: 9px;
+  position: relative;
+}
+
+.metric-icon.intake {
+  background: #e6f2ec;
+}
+.metric-icon.intake::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 7px;
+  top: 7px;
+  border-radius: 50%;
+  border: 4px solid #2c7a70;
+  border-top-color: transparent;
+}
+
+.metric-icon.burned {
+  background: #fff2d7;
+}
+.metric-icon.burned::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 5px;
+  width: 12px;
+  height: 18px;
+  border-radius: 12px 12px 12px 3px;
+  background: #e39b45;
+  transform: rotate(28deg);
+}
+
+.metric-icon.steps {
+  background: #e8ebfa;
+}
+.metric-icon.steps::before,
+.metric-icon.steps::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 15px;
+  border-radius: 8px 8px 5px 5px;
+  background: #586bb5;
+}
+.metric-icon.steps::before {
+  left: 8px;
+  top: 7px;
+  transform: rotate(-18deg);
+}
+.metric-icon.steps::after {
+  right: 7px;
+  bottom: 5px;
+  transform: rotate(18deg);
+}
+
+/* Companion mark (AI icon) */
+.companion-mark {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #1f6e64 0%, #4a82b7 52%, #e39b45 100%);
+  box-shadow: 0 10px 24px rgba(31, 110, 100, 0.22);
+}
+.companion-mark span {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.86);
+  position: relative;
+  display: block;
+}
+.companion-mark span::before,
+.companion-mark span::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 50%;
+}
+.companion-mark span::before {
+  width: 5px;
+  height: 5px;
+  left: 4px;
+  top: 7px;
+}
+.companion-mark span::after {
+  width: 5px;
+  height: 5px;
+  right: 4px;
+  top: 7px;
+}
+.companion-mark.large {
+  width: 66px;
+  height: 66px;
+  border-radius: 22px;
+  margin-bottom: 10px;
+}
+.companion-mark.large span {
+  width: 34px;
+  height: 34px;
+}
+.companion-mark.large span::before,
+.companion-mark.large span::after {
+  width: 7px;
+  height: 7px;
+  top: 12px;
+}
+.companion-mark.large span::before {
+  left: 7px;
+}
+.companion-mark.large span::after {
+  right: 7px;
+}
+
+/* AI Bottom Nav Icon */
+.nav-ai-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #1f6e64 0%, #4a82b7 52%, #e39b45 100%);
+  box-shadow: 0 14px 28px rgba(31, 110, 100, 0.3);
+  border: 4px solid #f8faf7;
+}
+.nav-ai-icon span {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  position: relative;
+  display: block;
+}
+.nav-ai-icon span::before,
+.nav-ai-icon span::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  top: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+}
+.nav-ai-icon span::before {
+  left: 5px;
+}
+.nav-ai-icon span::after {
+  right: 5px;
 }
