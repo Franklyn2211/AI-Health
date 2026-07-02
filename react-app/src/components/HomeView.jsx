@@ -1,86 +1,145 @@
 import { useState } from 'react';
-import { CheckCircle2, TrendingUp, Droplets, Footprints, Moon, Dumbbell, Smile, Utensils, Scale } from 'lucide-react';
+import { TrendingUp, Droplets, Moon, Dumbbell, Smile, Utensils, Scale, Footprints, Target, Brain, Shield, HeartPulse, ScanBarcode, ArrowRight, Zap } from 'lucide-react';
+import { useHealth } from '../context/HealthContext';
 
-const trackingItems = [
-  { id: 'weight', icon: Scale, label: 'Weight', value: '72.3 kg', target: 'Target: 68 kg', color: '#1f6e64', done: false },
-  { id: 'meals', icon: Utensils, label: 'Meals', value: '2/3 logged', target: '1,280 of 1,800 kcal', color: '#e39b45', done: false },
-  { id: 'workout', icon: Dumbbell, label: 'Workout', value: 'Upper Body', target: '45 min planned', color: '#6366f1', done: false },
-  { id: 'water', icon: Droplets, label: 'Water', value: '1.4L', target: 'Target: 2.2L', color: '#0ea5e9', done: false },
-  { id: 'sleep', icon: Moon, label: 'Sleep', value: '7.2 hrs', target: 'Quality: 82%', color: '#8b5cf6', done: false },
-  { id: 'mood', icon: Smile, label: 'Mood', value: 'Good 😊', target: 'Stress: Low', color: '#f59e0b', done: false },
-  { id: 'steps', icon: Footprints, label: 'Steps', value: '6,284', target: 'Target: 8,000', color: '#10b981', done: false },
-];
-
-const coachingMessages = [
-  { type: 'success', text: 'Great job! 🎉 You completed 85% of your weekly target.', time: 'Just now' },
-  { type: 'tip', text: "You're 600 steps away from your daily goal. A 10-min walk after dinner would do it! 🚶", time: '2h ago' },
-  { type: 'insight', text: "Your sleep quality improved 12% this week. Keep the 22:00 wind-down routine going! 😴", time: 'Today' },
-];
-
-export default function HomeView({ onTabChange, selectedGoal }) {
-  const [tracking, setTracking] = useState(trackingItems);
+export default function HomeView({ onTabChange, onSubViewChange }) {
+  const { userProfile, isFeatureActive, getGoalLabel } = useHealth();
   const [weeklyProgress] = useState(72);
 
-  const toggleDone = (id) => {
-    setTracking(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, done: !item.done } : item
-      )
-    );
-  };
+  const mockMetrics = [
+    { id: 'weight', icon: Scale, label: 'Berat Badan', value: '72.3 kg', target: 'Target: 68 kg', color: '#1f6e64', active: isFeatureActive('weight-tracking') },
+    { id: 'meals', icon: Utensils, label: 'Kalori', value: '1,280 kcal', target: 'Target: 1,800 kcal', color: '#e39b45', active: isFeatureActive('meal-planner') },
+    { id: 'workout', icon: Dumbbell, label: 'Workout', value: 'Upper Body', target: '45 menit', color: '#6366f1', active: isFeatureActive('fitness-routine') },
+    { id: 'water', icon: Droplets, label: 'Air', value: '1.4L', target: 'Target: 2.2L', color: '#0ea5e9', active: true },
+    { id: 'sleep', icon: Moon, label: 'Tidur', value: '7.2 jam', target: 'Kualitas: 82%', color: '#8b5cf6', active: isFeatureActive('sleep-tracker') },
+    { id: 'mood', icon: Smile, label: 'Mood', value: 'Baik 😊', target: 'Stres: Rendah', color: '#f59e0b', active: isFeatureActive('mood-tracker') },
+    { id: 'steps', icon: Footprints, label: 'Langkah', value: '6,284', target: 'Target: 8,000', color: '#10b981', active: true },
+  ].filter(m => m.active);
 
-  const completedCount = tracking.filter(t => t.done).length;
-  const todayPercent = Math.round((completedCount / tracking.length) * 100);
-
-  const goalLabels = {
-    'lose-weight': '🔥 Lose Weight',
-    'build-muscle': '💪 Build Muscle',
-    'heart-health': '❤️ Heart Health',
-    'eat-healthier': '🥗 Eat Healthier',
-    'sleep-better': '😴 Sleep Better',
-    'reduce-stress': '🧘 Reduce Stress',
-    'blood-sugar': '🩸 Blood Sugar',
-    'blood-pressure': '🫀 Blood Pressure',
-  };
+  const goalsText = userProfile.goals.length > 0
+    ? userProfile.goals.map(g => getGoalLabel(g)).join(', ')
+    : 'Tentukan target Anda';
 
   return (
-    <div
-      id="home"
-      className="screen-scroll h-full overflow-y-auto px-5 pt-5 pb-24"
-    >
-      {/* Header */}
+    <div className="screen-scroll h-full overflow-y-auto px-5 pt-5 pb-24">
       <header className="flex justify-between items-center gap-4 mb-5">
         <div>
           <p className="m-0 mb-1 uppercase text-[11px] leading-tight text-[#61716c] font-[850]">
-            TARA AI companion
+            TARA AI
           </p>
-          <h1 className="text-2xl leading-tight font-[800]">Good morning! 👋</h1>
+          <h1 className="text-xl leading-tight font-[800]">Pagi, {userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'} 👋</h1>
         </div>
         <button
-          aria-label="Open profile"
+          onClick={() => onTabChange('profile')}
           className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#1f6e64] text-white font-[850] border-0 text-sm shadow-lg shadow-[#1f6e64]/30 transition-all active:scale-95"
         >
-          TA
+          {userProfile.fullName ? userProfile.fullName.substring(0, 2).toUpperCase() : 'TA'}
         </button>
       </header>
 
-      {/* AI Coaching Card */}
-      <section
-        className="rounded-3xl p-5 text-white shadow-lg shadow-black/10 mb-5"
-        style={{ background: 'linear-gradient(135deg, #173b35 0%, #2c7a70 58%, #e8b95f 100%)' }}
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <span className="w-8 h-8 rounded-lg bg-white/20 grid place-items-center text-sm">🤖</span>
-          <div>
-            <p className="text-[11px] font-[850] text-white/70 uppercase">AI Coaching</p>
-            <p className="text-[12px] font-[700] text-white/90">{goalLabels[selectedGoal] || '🎯 Your Goal'}</p>
-          </div>
+      {/* AI Briefing */}
+      <div className="bg-[#e6f2ec] border border-[#1f6e64]/20 rounded-2xl p-4 mb-5 flex items-start gap-3">
+        <div className="w-8 h-8 rounded-full bg-[#1f6e64] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+          <Zap size={16} />
         </div>
-        <p className="text-[15px] font-[700] leading-snug mb-2">{coachingMessages[0].text}</p>
-        <p className="text-[12px] text-white/60">{coachingMessages[0].time}</p>
+        <div>
+          <p className="text-[12px] font-[800] text-[#1f6e64] mb-0.5">Wawasan Hari Ini</p>
+          <p className="text-[13px] text-[#253532] leading-snug">
+            {userProfile.goals.includes('diabetes-management')
+              ? 'Gula darah Anda stabil minggu ini. Mari pertahankan dengan sarapan rendah IG.'
+              : userProfile.goals.includes('pregnancy')
+              ? 'Memasuki minggu ke-12, pastikan asupan Asam Folat harian terpenuhi hari ini.'
+              : 'Anda tidur kurang dari 7 jam semalam. Rekomendasi: Lakukan peregangan ringan sebelum sarapan.'}
+          </p>
+        </div>
+      </div>
+
+      {/* Up Next / Urgent Actions */}
+      <section className="mb-6">
+        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Tugas Prioritas</h2>
+        <button
+          onClick={() => onSubViewChange('food-scanner')}
+          className="w-full flex items-center justify-between p-4 rounded-3xl bg-white shadow-sm border border-[#e6f2ec] transition-all active:scale-[0.98] hover:shadow-md"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#fff5e6] text-[#cc8800] flex items-center justify-center shrink-0">
+              <ScanBarcode size={24} />
+            </div>
+            <div className="text-left">
+              <p className="text-[11px] font-[850] text-[#cc8800] uppercase">Tindakan</p>
+              <p className="text-[14px] font-[800] text-[#253532]">Scan Makanan Anda</p>
+              <p className="text-[12px] text-[#61716c]">Catat asupan nutrisi siang ini</p>
+            </div>
+          </div>
+          <div className="w-8 h-8 rounded-full bg-[#f8faf7] flex items-center justify-center text-[#61716c]">
+            <ArrowRight size={18} />
+          </div>
+        </button>
       </section>
 
-      {/* Weekly Progress Ring */}
+      {/* Focus Card */}
+      <section className="rounded-3xl p-5 text-white shadow-lg shadow-[#1f6e64]/20 mb-5" style={{ background: 'linear-gradient(135deg, #1f6e64 0%, #2c7a70 100%)' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+            <Target size={16} className="text-white" />
+          </div>
+          <div>
+            <p className="text-[11px] font-[850] text-white/70 uppercase tracking-wider">Fokus Anda</p>
+            <p className="text-[12px] font-[700] text-white/90">{goalsText}</p>
+          </div>
+        </div>
+        <p className="text-[14px] font-[700] leading-snug">Tingkatkan kesehatan Anda dengan rencana personal AI kami! 🚀</p>
+      </section>
+
+      {/* Quick Actions */}
+      <section className="mb-5">
+        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Menu Cepat</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {isFeatureActive('meal-planner') && (
+            <button
+              onClick={() => onSubViewChange('meal-planner')}
+              className="p-4 rounded-2xl bg-[#fff5e6] border border-[#ffe6b3] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
+              <Utensils size={24} className="text-[#cc8800]" />
+              <p className="text-[12px] font-[800] text-[#cc8800]">Meal Plan</p>
+            </button>
+          )}
+          {isFeatureActive('fitness-routine') && (
+            <button
+              onClick={() => onSubViewChange('fitness-routine')}
+              className="p-4 rounded-2xl bg-[#e0e7ff] border border-[#c7d2fe] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
+              <Dumbbell size={24} className="text-[#4f46e5]" />
+              <p className="text-[12px] font-[800] text-[#4f46e5]">Workout</p>
+            </button>
+          )}
+          {isFeatureActive('sleep-tracker') && (
+            <button
+              onClick={() => onSubViewChange('sleep-tracker')}
+              className="p-4 rounded-2xl bg-[#f3e8ff] border border-[#e9d5ff] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
+              <Moon size={24} className="text-[#7c3aed]" />
+              <p className="text-[12px] font-[800] text-[#7c3aed]">Sleep Track</p>
+            </button>
+          )}
+          {isFeatureActive('meditation') && (
+            <button
+              onClick={() => onSubViewChange('mood-tracker')}
+              className="p-4 rounded-2xl bg-[#e0f2fe] border border-[#bae6fd] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
+              <Brain size={24} className="text-[#0369a1]" />
+              <p className="text-[12px] font-[800] text-[#0369a1]">Meditasi</p>
+            </button>
+          )}
+
+          {isFeatureActive('blood-pressure-tracking') && (
+            <button
+              onClick={() => onSubViewChange('bp-tracker')}
+              className="p-4 rounded-2xl bg-[#fee2e2] border border-[#fecaca] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
+              <HeartPulse size={24} className="text-[#dc2626]" />
+              <p className="text-[12px] font-[800] text-[#dc2626]">BP Check</p>
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* Weekly Progress */}
       <section className="flex items-center gap-4 rounded-3xl bg-white p-5 shadow-lg shadow-black/5 mb-5">
         <div className="relative w-[72px] h-[72px] flex-shrink-0">
           <svg viewBox="0 0 72 72" className="w-full h-full -rotate-90">
@@ -99,104 +158,30 @@ export default function HomeView({ onTabChange, selectedGoal }) {
           </span>
         </div>
         <div>
-          <h2 className="text-[16px] font-[800]">Weekly Progress</h2>
-          <p className="text-[13px] text-[#5f6f69] mt-1">
-            {completedCount}/{tracking.length} tasks done today · {weeklyProgress}% of weekly target
-          </p>
+          <p className="text-[11px] font-[850] text-[#61716c] uppercase">Progres Mingguan</p>
+          <p className="text-[14px] font-[800] text-[#253532] mb-1">Bagus! 🎉</p>
+          <p className="text-[12px] text-[#5f6f69]">72 dari 100 target terpenuhi</p>
         </div>
       </section>
 
-      {/* Daily Check-in */}
-      <section className="mb-5">
-        <div className="flex justify-between items-baseline mb-3">
-          <h2 className="text-lg font-[800]">Daily Check-in</h2>
-          <span className="text-[12px] text-[#7a8a84] font-[800]">{todayPercent}% done</span>
-        </div>
-        <div className="grid gap-2">
-          {tracking.map((item) => {
-            const IconComponent = item.icon;
+      {/* Metrics Grid */}
+      <section>
+        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Metrik Harian</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {mockMetrics.map(metric => {
+            const Icon = metric.icon;
             return (
-              <article
-                key={item.id}
-                className={`rounded-2xl p-3.5 shadow-lg shadow-black/5 flex items-center gap-3 transition-all duration-300 hover:scale-[1.01] cursor-pointer ${
-                  item.done ? 'bg-[#f0faf4] border-l-4' : 'bg-white border-l-4'
-                }`}
-                style={{ borderLeftColor: item.done ? '#22c55e' : item.color }}
-                onClick={() => toggleDone(item.id)}
-              >
-                <div
-                  className="w-9 h-9 rounded-xl grid place-items-center flex-shrink-0"
-                  style={{ background: `${item.color}15` }}
-                >
-                  <IconComponent size={18} color={item.color} strokeWidth={2.5} />
+              <div key={metric.id} className="rounded-2xl bg-white p-3 shadow-sm shadow-black/5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon size={18} color={metric.color} strokeWidth={2} />
+                  <p className="text-[11px] font-[700] text-[#5f6f69]">{metric.label}</p>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <strong className="text-[14px] font-[700]">{item.label}</strong>
-                    <span className="text-[13px] text-[#17231f] font-[600]">{item.value}</span>
-                  </div>
-                  <p className="text-[12px] text-[#61716c] mt-0.5">{item.target}</p>
-                </div>
-                <div className={`w-7 h-7 rounded-full grid place-items-center transition-all ${
-                  item.done ? 'bg-[#22c55e]' : 'bg-[#e6f2ec]'
-                }`}>
-                  <CheckCircle2 size={16} strokeWidth={2.5} className={item.done ? 'text-white' : 'text-[#1f6e64] opacity-40'} />
-                </div>
-              </article>
+                <p className="text-[14px] font-[800] text-[#253532] mb-1">{metric.value}</p>
+                <p className="text-[11px] text-[#71807b]">{metric.target}</p>
+              </div>
             );
           })}
         </div>
-      </section>
-
-      {/* AI Daily Insights */}
-      <section className="mb-5">
-        <div className="flex justify-between items-baseline mb-3">
-          <h2 className="text-lg font-[800]">AI Insights</h2>
-          <span className="text-[12px] text-[#7a8a84] font-[800]">Today</span>
-        </div>
-        <div className="grid gap-2">
-          {coachingMessages.slice(1).map((msg, i) => (
-            <article
-              key={i}
-              className="rounded-2xl bg-white p-4 shadow-lg shadow-black/5 transition-all hover:scale-[1.01]"
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-lg mt-0.5">
-                  {msg.type === 'tip' ? '💡' : msg.type === 'insight' ? '📊' : '🎯'}
-                </span>
-                <div className="flex-1">
-                  <p className="text-[13px] text-[#2d3d38] leading-relaxed font-[600]">{msg.text}</p>
-                  <span className="text-[11px] text-[#9ca3af] mt-1 block">{msg.time}</span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* Quick Actions */}
-      <section className="grid grid-cols-3 gap-2 mb-5">
-        <button
-          className="min-h-[72px] bg-white rounded-2xl p-3 grid justify-items-center gap-1 text-[#253532] text-[11px] font-[800] shadow-lg shadow-black/5 border-0 transition-all active:scale-95"
-          onClick={() => onTabChange('health')}
-        >
-          <span className="text-xl">🛡️</span>
-          Prevention
-        </button>
-        <button
-          className="min-h-[72px] bg-white rounded-2xl p-3 grid justify-items-center gap-1 text-[#253532] text-[11px] font-[800] shadow-lg shadow-black/5 border-0 transition-all active:scale-95"
-          onClick={() => onTabChange('chat')}
-        >
-          <span className="text-xl">💬</span>
-          AI Chat
-        </button>
-        <button
-          className="min-h-[72px] bg-white rounded-2xl p-3 grid justify-items-center gap-1 text-[#253532] text-[11px] font-[800] shadow-lg shadow-black/5 border-0 transition-all active:scale-95"
-          onClick={() => onTabChange('doctor')}
-        >
-          <span className="text-xl">👨‍⚕️</span>
-          Doctor
-        </button>
       </section>
     </div>
   );
