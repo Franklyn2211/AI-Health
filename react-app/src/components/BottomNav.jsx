@@ -1,11 +1,11 @@
-import { Home, Camera, Dumbbell, Brain } from 'lucide-react';
+import { Home, ShieldCheck, Stethoscope, User } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: 'home',    label: 'Home',    Icon: Home },
-  { id: 'scan',    label: 'Scan',    Icon: Camera },
-  { id: 'chat',    label: 'AI',      isAssistant: true },
-  { id: 'fitness', label: 'Fitness', Icon: Dumbbell },
-  { id: 'mind',    label: 'Mind',    Icon: Brain },
+  { id: 'home',    label: 'Home',      Icon: Home },
+  { id: 'health',  label: 'Health',    Icon: ShieldCheck },
+  { id: 'chat',    label: 'AI',        isAssistant: true },
+  { id: 'doctor',  label: 'Doctor',    Icon: Stethoscope },
+  { id: 'profile', label: 'Profile',   Icon: User },
 ];
 
 export default function BottomNav({ activeTab, onTabChange }) {
