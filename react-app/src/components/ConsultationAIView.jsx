@@ -29,7 +29,7 @@ export default function ConsultationAIView() {
             setMessages([
                 {
                     type: 'ai',
-                    text: `Halo ${userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'}! 👋 Saya TARA AI, pendamping kesehatan pribadi Anda.`
+                    text: `Halo ${userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'}! 👋 Saya VIN AI, pendamping kesehatan pribadi Anda.`
                 },
                 {
                     type: 'ai',
@@ -80,7 +80,7 @@ export default function ConsultationAIView() {
                         <Bot size={22} />
                     </div>
                     <div>
-                        <h1 className="text-[16px] font-[900] text-slate-800 leading-tight">TARA AI</h1>
+                        <h1 className="text-[16px] font-[900] text-slate-800 leading-tight">VIN AI</h1>
                         <div className="flex items-center gap-1.5 mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             <p className="text-[11px] font-[800] text-teal-600 uppercase tracking-widest">Online</p>
@@ -99,7 +99,7 @@ export default function ConsultationAIView() {
             >
                 <div className="text-center mb-6">
                     <p className="text-[10px] font-[800] text-slate-400 uppercase tracking-wider">Konsultasi Terenkripsi</p>
-                    <p className="text-[10px] text-slate-400 mt-1">TARA AI bukan pengganti nasihat medis profesional.</p>
+                    <p className="text-[10px] text-slate-400 mt-1">VIN AI bukan pengganti nasihat medis profesional.</p>
                 </div>
 
                 {messages.map((msg, i) => (

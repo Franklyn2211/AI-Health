@@ -26,8 +26,8 @@ export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
                 <button
                     onClick={() => setActiveTab('consult')}
                     className={`py-3 px-4 rounded-xl font-[800] text-[13px] border-2 transition-all ${activeTab === 'consult'
-                            ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
-                            : 'bg-white text-[#253532] border-[#e6f2ec]'
+                        ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
+                        : 'bg-white text-[#253532] border-[#e6f2ec]'
                         }`}
                 >
                     💬 Konsultasi
@@ -35,8 +35,8 @@ export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
                 <button
                     onClick={() => setActiveTab('emr')}
                     className={`py-3 px-4 rounded-xl font-[800] text-[13px] border-2 transition-all ${activeTab === 'emr'
-                            ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
-                            : 'bg-white text-[#253532] border-[#e6f2ec]'
+                        ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
+                        : 'bg-white text-[#253532] border-[#e6f2ec]'
                         }`}
                 >
                     🏥 EMR Sync
@@ -54,7 +54,7 @@ export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
                     >
                         <div className="flex items-center gap-3 justify-between">
                             <div className="text-left">
-                                <p className="text-[11px] font-[850] text-white/60 uppercase tracking-wider mb-1">Halodoc Style</p>
+                                <p className="text-[11px] font-[850] text-white/60 uppercase tracking-wider mb-1"></p>
                                 <p className="text-[16px] font-[900] mb-0.5">Cari Dokter Spesialis</p>
                                 <p className="text-[12px] text-white/70">6 dokter tersedia · Berbasis tujuan Anda</p>
                             </div>

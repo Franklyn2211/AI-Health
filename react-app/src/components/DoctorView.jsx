@@ -60,7 +60,7 @@ export default function DoctorView({ onTabChange }) {
           </div>
         </div>
         <p className="text-[13px] text-[#7f1d1d] leading-relaxed">
-          TARA AI recommends consulting a healthcare professional based on your recent health trends.
+          VIN AI recommends consulting a healthcare professional based on your recent health trends.
         </p>
       </section>
 

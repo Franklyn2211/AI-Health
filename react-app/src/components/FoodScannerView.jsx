@@ -114,7 +114,7 @@ export default function FoodScannerView({ onBack }) {
                     <ArrowLeft size={18} />
                 </button>
                 <div>
-                    <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">MyFitnessPal Style</p>
+                    <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">Scan</p>
                     <h1 className="text-[20px] font-[800] text-[#253532]">Pemindai Makanan</h1>
                 </div>
             </div>

@@ -143,7 +143,7 @@ export default function FitnessPlannerView({ onBack }) {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">Nike Training Club</p>
+          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">Fitness </p>
           <h1 className="text-[20px] font-[800] text-[#253532]">Workout Hari Ini</h1>
         </div>
         <span className="ml-auto text-[11px] font-[800] px-2.5 py-1 rounded-xl shrink-0"
@@ -215,9 +215,8 @@ export default function FitnessPlannerView({ onBack }) {
               <button
                 key={i}
                 onClick={() => started && setDoneMap(p => ({ ...p, [i]: !p[i] }))}
-                className={`w-full flex items-center gap-3 p-4 rounded-2xl border text-left transition-all active:scale-[0.98] ${
-                  done ? 'border-[#1f6e64]/30 bg-[#f0f9f7]' : 'bg-white border-[#e6f2ec]'
-                } ${!started ? 'opacity-90' : ''}`}
+                className={`w-full flex items-center gap-3 p-4 rounded-2xl border text-left transition-all active:scale-[0.98] ${done ? 'border-[#1f6e64]/30 bg-[#f0f9f7]' : 'bg-white border-[#e6f2ec]'
+                  } ${!started ? 'opacity-90' : ''}`}
               >
                 <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-xl`}>
                   {ex.emoji}

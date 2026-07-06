@@ -108,7 +108,7 @@ export default function AIAnalysisScreen({ onNext, profile, selectedGoal }) {
       </div>
 
       <h2 className="analysis-title">
-        {completed ? 'Analysis Complete!' : 'TARA AI is analyzing your health profile'}
+        {completed ? 'Analysis Complete!' : 'VIN AI is analyzing your health profile'}
       </h2>
 
       {/* Step list */}

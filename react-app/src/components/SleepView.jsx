@@ -21,7 +21,7 @@ export default function SleepView({ onTabChange }) {
       <header className="flex justify-between items-center gap-[16px] mb-[24px]">
         <div>
           <p className="m-0 mb-[6px] uppercase text-[12px] leading-[1.15] text-indigo-200 font-[850] tracking-wide">
-            Sleep AI
+
           </p>
           <h1 className="text-[28px] leading-[1.05] font-[800]">Sleep Tracker</h1>
         </div>
@@ -43,10 +43,10 @@ export default function SleepView({ onTabChange }) {
               <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="6" className="text-indigo-400" strokeDasharray="289" strokeDashoffset="43" strokeLinecap="round" />
             </svg>
           </div>
-          
+
           <h2 className="text-2xl font-bold mb-1">7h 20m</h2>
           <p className="text-indigo-200 text-sm font-medium">Total Time Asleep</p>
-          
+
           <div className="grid grid-cols-2 gap-8 w-full mt-8 border-t border-white/10 pt-6">
             <div className="text-center">
               <p className="text-indigo-200 text-sm font-medium mb-1">Deep Sleep</p>
@@ -73,17 +73,17 @@ export default function SleepView({ onTabChange }) {
             <Settings2 size={24} />
           </button>
         </div>
-        
+
         <div className="flex justify-center my-2">
           <div className="text-5xl font-black tracking-tight text-white/90">07:30</div>
         </div>
-        
+
         <div className="flex items-center justify-between border-t border-white/10 pt-5">
           <div>
             <p className="font-bold text-sm">Smart Wake-Up</p>
             <p className="text-indigo-200/70 text-xs mt-0.5">Wakes you in light sleep phase</p>
           </div>
-          <button 
+          <button
             onClick={() => setSmartWake(!smartWake)}
             className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${smartWake ? 'bg-indigo-500' : 'bg-white/20'}`}
           >

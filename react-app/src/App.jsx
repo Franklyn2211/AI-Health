@@ -37,7 +37,7 @@ function AppContent() {
   return (
     <main
       className="min-h-screen grid place-items-center p-[28px] max-sm:p-0"
-      aria-label="TARA AI Preventive Healthcare Companion"
+      aria-label="VIN AI Preventive Healthcare Companion"
     >
       <section
         className="relative overflow-hidden border-[10px] border-[#1b2422] rounded-[48px] bg-[#f8faf7] shadow-[0_32px_96px_rgba(30,45,40,0.4)] max-sm:w-full max-sm:h-screen max-sm:min-h-screen max-sm:border-0 max-sm:rounded-none"
@@ -46,7 +46,7 @@ function AppContent() {
           height: 'min(860px, calc(100vh - 56px))',
           minHeight: '740px',
         }}
-        aria-label="TARA AI app"
+        aria-label="VIN AI app"
       >
         <StatusBar />
 

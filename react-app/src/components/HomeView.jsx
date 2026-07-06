@@ -25,7 +25,7 @@ export default function HomeView({ onTabChange, onSubViewChange }) {
       <header className="flex justify-between items-center gap-4 mb-5">
         <div>
           <p className="m-0 mb-1 uppercase text-[11px] leading-tight text-[#61716c] font-[850]">
-            TARA AI
+            VIN AI
           </p>
           <h1 className="text-xl leading-tight font-[800]">Pagi, {userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'} 👋</h1>
         </div>

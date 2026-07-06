@@ -112,13 +112,13 @@ const DOCTORS = [
 ];
 
 const SPECIALTIES = [
-  { id: 'all',        label: 'Semua' },
-  { id: 'internal',   label: 'Umum' },
-  { id: 'obgyn',      label: 'Kandungan' },
-  { id: 'cardio',     label: 'Jantung' },
-  { id: 'nutrition',  label: 'Gizi' },
+  { id: 'all', label: 'Semua' },
+  { id: 'internal', label: 'Umum' },
+  { id: 'obgyn', label: 'Kandungan' },
+  { id: 'cardio', label: 'Jantung' },
+  { id: 'nutrition', label: 'Gizi' },
   { id: 'psychiatry', label: 'Jiwa' },
-  { id: 'endo',       label: 'Endokrin' },
+  { id: 'endo', label: 'Endokrin' },
 ];
 
 /* ── Booking Modal ── */
@@ -147,11 +147,10 @@ function BookingModal({ doctor, onClose }) {
         <div className="grid grid-cols-4 gap-2 mb-5">
           {slots.map(slot => (
             <button key={slot} onClick={() => setSelected(slot)}
-              className={`py-2 rounded-xl text-[12px] font-[800] border transition-all ${
-                selected === slot
+              className={`py-2 rounded-xl text-[12px] font-[800] border transition-all ${selected === slot
                   ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
                   : 'bg-white text-[#253532] border-[#e6f2ec]'
-              }`}>
+                }`}>
               {slot}
             </button>
           ))}
@@ -174,7 +173,7 @@ export default function DoctorListView({ onBack }) {
   const goals = userProfile.goals || [];
 
   const [activeSpec, setActiveSpec] = useState('all');
-  const [search, setSearch]         = useState('');
+  const [search, setSearch] = useState('');
   const [bookingDoctor, setBookingDoctor] = useState(null);
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
@@ -188,9 +187,9 @@ export default function DoctorListView({ onBack }) {
   });
 
   const filtered = sortedDoctors.filter(d => {
-    const matchSpec   = activeSpec === 'all' || d.specialtyId === activeSpec;
+    const matchSpec = activeSpec === 'all' || d.specialtyId === activeSpec;
     const matchSearch = !search || d.name.toLowerCase().includes(search.toLowerCase()) ||
-                        d.specialty.toLowerCase().includes(search.toLowerCase());
+      d.specialty.toLowerCase().includes(search.toLowerCase());
     const matchOnline = !showOnlineOnly || d.online;
     return matchSpec && matchSearch && matchOnline;
   });
@@ -208,14 +207,13 @@ export default function DoctorListView({ onBack }) {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">Halodoc Style</p>
+          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest"></p>
           <h1 className="text-[20px] font-[800] text-[#253532]">Dokter Spesialis</h1>
         </div>
         <button
           onClick={() => setShowOnlineOnly(v => !v)}
-          className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-[800] border transition-all ${
-            showOnlineOnly ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-[#61716c] border-[#e6f2ec]'
-          }`}>
+          className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-[800] border transition-all ${showOnlineOnly ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-[#61716c] border-[#e6f2ec]'
+            }`}>
           <div className={`w-1.5 h-1.5 rounded-full ${showOnlineOnly ? 'bg-white' : 'bg-emerald-400'}`} />
           Online
         </button>
@@ -243,11 +241,10 @@ export default function DoctorListView({ onBack }) {
           <button
             key={s.id}
             onClick={() => setActiveSpec(s.id)}
-            className={`shrink-0 px-3.5 py-2 rounded-xl text-[12px] font-[800] border transition-all active:scale-[0.97] ${
-              activeSpec === s.id
+            className={`shrink-0 px-3.5 py-2 rounded-xl text-[12px] font-[800] border transition-all active:scale-[0.97] ${activeSpec === s.id
                 ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
                 : 'bg-white text-[#61716c] border-[#e6f2ec]'
-            }`}>
+              }`}>
             {s.label}
           </button>
         ))}

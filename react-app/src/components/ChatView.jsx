@@ -28,12 +28,12 @@ function replyToMessage(message) {
   if (lower.includes("risk") || lower.includes("warning") || lower.includes("alert")) {
     return "I've detected 1 high-risk alert (blood pressure rising) and 2 warnings (sleep quality declining, activity level low). Would you like me to show detailed analysis or recommend a doctor consultation?";
   }
-  return "I'm TARA AI, your preventive healthcare companion. I can help with health tracking, meal planning, workout guidance, risk detection, and doctor recommendations. What would you like to know?";
+  return "I'm VIN AI, your preventive healthcare companion. I can help with health tracking, meal planning, workout guidance, risk detection, and doctor recommendations. What would you like to know?";
 }
 
 export default function ChatView({ onTabChange }) {
   const [messages, setMessages] = useState([
-    { type: 'ai', text: "Hi! I'm TARA AI, your preventive healthcare companion. 🛡️" },
+    { type: 'ai', text: "Hi! I'm VIN AI, your preventive healthcare companion. 🛡️" },
     { type: 'ai', text: "I can help you track health, plan meals & workouts, detect risks early, and connect you with doctors when needed. Try a suggestion below!" }
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -69,7 +69,7 @@ export default function ChatView({ onTabChange }) {
           <span />
         </div>
         <p className="m-0 mb-1 uppercase text-[11px] leading-tight text-[#61716c] font-[850]">
-          TARA AI assistant
+          VIN AI assistant
         </p>
         <h1 className="text-2xl leading-tight font-[800] max-w-[300px] mb-2">
           How can I help you today?
@@ -107,8 +107,8 @@ export default function ChatView({ onTabChange }) {
             type="text"
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
-            aria-label="Message TARA AI"
-            placeholder="Ask TARA AI..."
+            aria-label="Message VIN AI"
+            placeholder="Ask VIN AI..."
             className="min-w-0 min-h-[48px] rounded-2xl bg-white shadow-md shadow-black/5 text-[#17231f] px-4 outline-none border-0 focus:shadow-[#2c7a70]/20 transition-all duration-300"
           />
           <button type="submit" aria-label="Send message" className="min-h-[48px] border-0 rounded-2xl bg-[#e39b45] text-white font-[900] text-[12px] shadow-lg shadow-[#e39b45]/30 transition-all active:scale-95">Send</button>

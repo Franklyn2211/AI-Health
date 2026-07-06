@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { ArrowLeft, Bell, Play, Pause, Settings2, CloudRain, Waves, Radio, Trees, Coffee, Flame, Moon } from 'lucide-react';
 
 const SOUNDSCAPES = [
-  { id: 'rain',   name: 'Hujan Lebat', Icon: CloudRain, desc: 'Menenangkan pikiran' },
-  { id: 'waves',  name: 'Ombak Laut',  Icon: Waves,     desc: 'Relaksasi alami' },
-  { id: 'white',  name: 'White Noise', Icon: Radio,     desc: 'Blok gangguan' },
-  { id: 'forest', name: 'Hutan Malam', Icon: Trees,     desc: 'Alam sunyi' },
-  { id: 'cafe',   name: 'Kafe Tenang', Icon: Coffee,    desc: 'Fokus & rileks' },
-  { id: 'fire',   name: 'Api Unggun',  Icon: Flame,     desc: 'Hangat & nyaman' },
+  { id: 'rain', name: 'Hujan Lebat', Icon: CloudRain, desc: 'Menenangkan pikiran' },
+  { id: 'waves', name: 'Ombak Laut', Icon: Waves, desc: 'Relaksasi alami' },
+  { id: 'white', name: 'White Noise', Icon: Radio, desc: 'Blok gangguan' },
+  { id: 'forest', name: 'Hutan Malam', Icon: Trees, desc: 'Alam sunyi' },
+  { id: 'cafe', name: 'Kafe Tenang', Icon: Coffee, desc: 'Fokus & rileks' },
+  { id: 'fire', name: 'Api Unggun', Icon: Flame, desc: 'Hangat & nyaman' },
 ];
 
 const SLEEP_STAGES = [
   { label: 'Tidur Ringan', val: '2h 10m', pct: 30, color: '#14b8a6' },
-  { label: 'Deep Sleep',   val: '2h 15m', pct: 30, color: '#1f6e64' },
-  { label: 'REM',          val: '1h 45m', pct: 24, color: '#f59e0b' },
-  { label: 'Terjaga',      val: '1h 10m', pct: 16, color: '#94a3b8' },
+  { label: 'Deep Sleep', val: '2h 15m', pct: 30, color: '#1f6e64' },
+  { label: 'REM', val: '1h 45m', pct: 24, color: '#f59e0b' },
+  { label: 'Terjaga', val: '1h 10m', pct: 16, color: '#94a3b8' },
 ];
 
 export default function SleepTrackerView({ onBack }) {
@@ -35,7 +35,7 @@ export default function SleepTrackerView({ onBack }) {
           <ArrowLeft size={18} />
         </button>
         <div className="text-center">
-          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">Sleep AI</p>
+          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest"></p>
           <h1 className="text-[17px] font-[800] text-[#253532]">Sleep Tracker</h1>
         </div>
         <button className="w-9 h-9 rounded-xl flex items-center justify-center bg-white border border-[#e6f2ec] text-[#1f6e64] shadow-sm transition-all active:scale-95">
@@ -159,11 +159,10 @@ export default function SleepTrackerView({ onBack }) {
               <button
                 key={s.id}
                 onClick={() => setPlaying(isPlaying ? null : s.id)}
-                className={`flex flex-col items-center gap-2 p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${
-                  isPlaying
+                className={`flex flex-col items-center gap-2 p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${isPlaying
                     ? 'border-[#1f6e64] bg-[#f0f9f7] shadow-sm'
                     : 'border-[#e6f2ec] bg-white'
-                }`}
+                  }`}
               >
                 <s.Icon size={24} className={isPlaying ? 'text-[#1f6e64]' : 'text-[#61716c]'} strokeWidth={isPlaying ? 2.5 : 2} />
                 <p className={`text-[10px] font-[800] text-center leading-tight ${isPlaying ? 'text-[#1f6e64]' : 'text-[#61716c]'}`}>

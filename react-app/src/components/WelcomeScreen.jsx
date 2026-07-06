@@ -49,7 +49,7 @@ export default function WelcomeScreen({ onNext }) {
         </div>
 
         <h1 className="welcome-title">
-          Welcome to <span className="welcome-brand">TARA AI</span>
+          Welcome to <span className="welcome-brand">VIN AI</span>
         </h1>
 
         <p className="welcome-subtitle">

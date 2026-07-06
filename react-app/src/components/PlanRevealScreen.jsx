@@ -77,7 +77,7 @@ export default function PlanRevealScreen({ onNext, selectedGoal, profile }) {
         <header className="onboarding-header">
           <span className="onboarding-step-label">Your Plan is Ready! 🎉</span>
           <h1 className="onboarding-title">Your Personalized Health Plan</h1>
-          <p className="onboarding-desc">Here's what TARA AI created for you, {userName}</p>
+          <p className="onboarding-desc">Here's what VIN AI created for you, {userName}</p>
         </header>
 
         <div className="plan-cards">

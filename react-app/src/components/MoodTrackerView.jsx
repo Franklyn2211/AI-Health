@@ -7,24 +7,24 @@ import {
 
 /* ── Mood options ── */
 const MOODS = [
-  { id: 'great',     label: 'Luar Biasa', Icon: Laugh,  ring: 'border-emerald-400', bg: 'bg-emerald-50',  text: 'text-emerald-700', dot: '#10b981' },
-  { id: 'good',      label: 'Baik',       Icon: Smile,  ring: 'border-teal-400',    bg: 'bg-teal-50',     text: 'text-teal-700',    dot: '#14b8a6' },
-  { id: 'neutral',   label: 'Biasa',      Icon: Meh,    ring: 'border-amber-400',   bg: 'bg-amber-50',    text: 'text-amber-700',   dot: '#f59e0b' },
-  { id: 'low',       label: 'Kurang',     Icon: Frown,  ring: 'border-red-400',     bg: 'bg-red-50',      text: 'text-red-700',     dot: '#ef4444' },
+  { id: 'great', label: 'Luar Biasa', Icon: Laugh, ring: 'border-emerald-400', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: '#10b981' },
+  { id: 'good', label: 'Baik', Icon: Smile, ring: 'border-teal-400', bg: 'bg-teal-50', text: 'text-teal-700', dot: '#14b8a6' },
+  { id: 'neutral', label: 'Biasa', Icon: Meh, ring: 'border-amber-400', bg: 'bg-amber-50', text: 'text-amber-700', dot: '#f59e0b' },
+  { id: 'low', label: 'Kurang', Icon: Frown, ring: 'border-red-400', bg: 'bg-red-50', text: 'text-red-700', dot: '#ef4444' },
 ];
 
 /* ── Guided breathing phases ── */
 const BREATHING_PHASES = [
   { label: 'Tarik Napas', duration: 4, color: '#14b8a6', scale: 'scale-110' },
-  { label: 'Tahan',        duration: 4, color: '#8b5cf6', scale: 'scale-110' },
-  { label: 'Buang Napas',  duration: 6, color: '#f59e0b', scale: 'scale-90'  },
+  { label: 'Tahan', duration: 4, color: '#8b5cf6', scale: 'scale-110' },
+  { label: 'Buang Napas', duration: 6, color: '#f59e0b', scale: 'scale-90' },
 ];
 
 /* ── Micro-exercises ── */
 const MICRO_EXERCISES = [
   { id: 'breathing', title: 'Pernapasan 4-4-6', desc: '1 menit · Turunkan kortisol secara instan' },
-  { id: 'gratitude', title: 'Catatan Syukur',   desc: '2 menit · Tulis 3 hal yang Anda syukuri' },
-  { id: 'body-scan', title: 'Body Scan',         desc: '3 menit · Pindai ketegangan dari kepala ke kaki' },
+  { id: 'gratitude', title: 'Catatan Syukur', desc: '2 menit · Tulis 3 hal yang Anda syukuri' },
+  { id: 'body-scan', title: 'Body Scan', desc: '3 menit · Pindai ketegangan dari kepala ke kaki' },
   { id: 'grounding', title: 'Grounding 5-4-3-2-1', desc: '2 menit · Teknik mindfulness untuk fokus' },
 ];
 
@@ -143,10 +143,10 @@ export default function MoodTrackerView({ onBack }) {
     setSubmitted(true);
     const moodLabel = MOODS.find(m => m.id === selectedMood)?.label || '';
     setPsychMessages(p => [...p,
-      { role: 'user', text: `Saya merasa ${moodLabel} hari ini.${note ? ` ${note}` : ''}` },
+    { role: 'user', text: `Saya merasa ${moodLabel} hari ini.${note ? ` ${note}` : ''}` },
     ]);
     setTimeout(() => setPsychMessages(p => [...p,
-      { role: 'ai', text: getReply(`Saya merasa ${moodLabel}`) },
+    { role: 'ai', text: getReply(`Saya merasa ${moodLabel}`) },
     ]), 400);
   };
 
@@ -161,7 +161,7 @@ export default function MoodTrackerView({ onBack }) {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">Headspace & Wysa</p>
+          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest"></p>
           <h1 className="text-[20px] font-[800] text-[#253532]">Kesehatan Mental</h1>
         </div>
       </div>
@@ -178,9 +178,8 @@ export default function MoodTrackerView({ onBack }) {
                 <button
                   key={id}
                   onClick={() => setSelectedMood(id)}
-                  className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all active:scale-[0.97] ${
-                    selectedMood === id ? `${ring} ${bg}` : 'border-[#e6f2ec] bg-white'
-                  }`}
+                  className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all active:scale-[0.97] ${selectedMood === id ? `${ring} ${bg}` : 'border-[#e6f2ec] bg-white'
+                    }`}
                 >
                   <Icon size={22} className={selectedMood === id ? text : 'text-[#61716c]'} />
                   <span className={`text-[10px] font-[850] ${selectedMood === id ? text : 'text-[#61716c]'}`}>
@@ -272,11 +271,10 @@ export default function MoodTrackerView({ onBack }) {
           {psychMessages.map((msg, i) => (
             <div
               key={i}
-              className={`max-w-[88%] px-3.5 py-2.5 rounded-2xl text-[12px] leading-[1.45] ${
-                msg.role === 'ai'
+              className={`max-w-[88%] px-3.5 py-2.5 rounded-2xl text-[12px] leading-[1.45] ${msg.role === 'ai'
                   ? 'bg-[#f0f9f7] text-[#253532] mr-auto'
                   : 'bg-[#1f6e64] text-white ml-auto'
-              }`}
+                }`}
             >
               {msg.text}
             </div>
