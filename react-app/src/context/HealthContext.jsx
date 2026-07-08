@@ -3,38 +3,41 @@ import { createContext, useContext, useState, useCallback, useMemo } from 'react
 const HealthContext = createContext();
 
 const AVAILABLE_GOALS = [
-    { id: 'lose-weight',         label: 'Turunkan Berat Badan', features: ['weight-tracking', 'meal-planner', 'fitness-routine'] },
-    { id: 'build-muscle',        label: 'Build Muscle',          features: ['fitness-routine', 'meal-planner', 'weight-tracking'] },
-    { id: 'heart-health',        label: 'Kesehatan Jantung',     features: ['fitness-routine', 'health-monitor', 'blood-pressure-tracking'] },
-    { id: 'sleep-quality',       label: 'Perbaiki Kualitas Tidur', features: ['sleep-tracker', 'meditation', 'mood-tracker'] },
-    { id: 'reduce-stress',       label: 'Kurangi Stres',         features: ['meditation', 'mood-tracker', 'sleep-tracker'] },
-    { id: 'pregnancy',           label: 'Kehamilan',             features: ['health-monitor', 'nutrition-guide', 'mood-tracker'] },
-    { id: 'diabetes-management', label: 'Manajemen Diabetes',    features: ['blood-sugar-tracking', 'meal-planner', 'health-monitor'] },
-    { id: 'nutrition',           label: 'Nutrisi Seimbang',      features: ['meal-planner', 'nutrition-guide', 'weight-tracking'] },
+    { id: 'body-goals',          label: 'Body Goals', features: ['weight-tracking', 'meal-planner', 'fitness-routine'] },
+    { id: 'sleep',               label: 'Perbaiki Kualitas Tidur', features: ['sleep-tracker', 'meditation'] },
+    { id: 'stress',              label: 'Kurangi Stres', features: ['meditation'] },
+    { id: 'pregnancy',           label: 'Kehamilan', features: ['nutrition-guide'] },
+    { id: 'heart',               label: 'Kesehatan Jantung', features: ['health-monitor'] },
+    { id: 'diabetes',            label: 'Manajemen Diabetes', features: ['blood-sugar-tracking', 'meal-planner'] },
 ];
 
 export function HealthProvider({ children }) {
     const [userProfile, setUserProfile] = useState({
         fullName: '',
-        nik: '',
+        contact: '',
         goals: [],
         healthConditions: [],
         allergies: [],
         age: null,
         gender: '',
-        healthData: {},
+        currentWeight: '',
+        targetWeight: '',
+        height: '',
+        equipment: '',
+        diet: ''
     });
 
     const [hasOnboarded, setHasOnboarded] = useState(false);
+    const [consumedCalories, setConsumedCalories] = useState(0);
 
-    /* ── PRESERVED: original signature intact, extended with optional extras ── */
-    const completeOnboarding = useCallback((fullName, nik, selectedGoals, extras = {}) => {
+    const completeOnboarding = useCallback((fullName, contact, selectedGoals, extras = {}) => {
         const profile = {
             fullName,
-            nik,
+            contact,
             goals: selectedGoals,
             healthConditions: extras.healthConditions || [],
             allergies: extras.allergies || [],
+            ...extras
         };
         setUserProfile(prev => ({ ...prev, ...profile }));
         setHasOnboarded(true);
@@ -58,6 +61,10 @@ export function HealthProvider({ children }) {
         });
     }, []);
 
+    const addConsumedCalories = useCallback((cals) => {
+        setConsumedCalories(prev => prev + cals);
+    }, []);
+
     const getActiveFeatures = useCallback(() => {
         const featuresSet = new Set();
         userProfile.goals.forEach(goalId => {
@@ -76,20 +83,21 @@ export function HealthProvider({ children }) {
         return getActiveFeatures().includes(featureId);
     }, [getActiveFeatures]);
 
-    /* ── Memoize value object to prevent unnecessary re-renders of subscribers ── */
     const value = useMemo(
         () => ({
             userProfile,
             hasOnboarded,
+            consumedCalories,
             completeOnboarding,
             updateProfile,
             updateGoals,
+            addConsumedCalories,
             getActiveFeatures,
             getGoalLabel,
             isFeatureActive,
             AVAILABLE_GOALS,
         }),
-        [userProfile, hasOnboarded, completeOnboarding, updateProfile, updateGoals, getActiveFeatures, getGoalLabel, isFeatureActive]
+        [userProfile, hasOnboarded, consumedCalories, completeOnboarding, updateProfile, updateGoals, addConsumedCalories, getActiveFeatures, getGoalLabel, isFeatureActive]
     );
 
     return (
