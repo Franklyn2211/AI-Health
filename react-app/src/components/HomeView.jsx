@@ -1,188 +1,180 @@
 import { useState } from 'react';
-import { TrendingUp, Droplets, Moon, Dumbbell, Smile, Utensils, Scale, Footprints, Target, Brain, Shield, HeartPulse, ScanBarcode, ArrowRight, Zap } from 'lucide-react';
+import { Zap, Target, Utensils, Scale, ArrowRight, ScanBarcode, Dumbbell, Moon, Brain, HeartPulse, Footprints, CheckCircle2 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 
 export default function HomeView({ onTabChange, onSubViewChange }) {
-  const { userProfile, isFeatureActive, getGoalLabel } = useHealth();
-  const [weeklyProgress] = useState(72);
+  const { userProfile, getGoalLabel, consumedCalories, macros, loggedMeals } = useHealth();
+  const [currentDate] = useState(new Date());
+
+  const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const [selectedDayIndex, setSelectedDayIndex] = useState(currentDate.getDay());
+  const currentDayIndex = currentDate.getDay();
+
+  const dailyStepsGoal = 8000;
+  const currentSteps = 4231;
+  const stepsPercent = Math.min((currentSteps / dailyStepsGoal) * 100, 100);
 
   const mockMetrics = [
-    { id: 'weight', icon: Scale, label: 'Berat Badan', value: '72.3 kg', target: 'Target: 68 kg', color: '#1f6e64', active: isFeatureActive('weight-tracking') },
-    { id: 'meals', icon: Utensils, label: 'Kalori', value: '1,280 kcal', target: 'Target: 1,800 kcal', color: '#e39b45', active: isFeatureActive('meal-planner') },
-    { id: 'workout', icon: Dumbbell, label: 'Workout', value: 'Upper Body', target: '45 menit', color: '#6366f1', active: isFeatureActive('fitness-routine') },
-    { id: 'water', icon: Droplets, label: 'Air', value: '1.4L', target: 'Target: 2.2L', color: '#0ea5e9', active: true },
-    { id: 'sleep', icon: Moon, label: 'Tidur', value: '7.2 jam', target: 'Kualitas: 82%', color: '#8b5cf6', active: isFeatureActive('sleep-tracker') },
-    { id: 'mood', icon: Smile, label: 'Mood', value: 'Baik 😊', target: 'Stres: Rendah', color: '#f59e0b', active: isFeatureActive('mood-tracker') },
-    { id: 'steps', icon: Footprints, label: 'Langkah', value: '6,284', target: 'Target: 8,000', color: '#10b981', active: true },
-  ].filter(m => m.active);
+    { id: 'calories', icon: Utensils, label: 'Kalori', value: `${consumedCalories}`, target: `Target: 2000 kcal`, color: '#e39b45', active: true },
+    { id: 'weight', icon: Scale, label: 'Berat Badan', value: `${userProfile.currentWeight || 72} kg`, target: `Target: ${userProfile.targetWeight || 68} kg`, color: '#1f6e64', active: true }
+  ];
 
   const goalsText = userProfile.goals.length > 0
     ? userProfile.goals.map(g => getGoalLabel(g)).join(', ')
     : 'Tentukan target Anda';
 
   return (
-    <div className="screen-scroll h-full overflow-y-auto px-5 pt-5 pb-24">
-      <header className="flex justify-between items-center gap-4 mb-5">
+    <div className="screen-scroll h-full overflow-y-auto px-5 pt-5 pb-24 bg-slate-50">
+      <header className="flex justify-between items-center gap-4 mb-6">
         <div>
-          <p className="m-0 mb-1 uppercase text-[11px] leading-tight text-[#61716c] font-[850]">
-            VIN AI
+          <p className="m-0 mb-1 uppercase text-[10px] tracking-wider text-slate-500 font-extrabold">
+            AI-Health
           </p>
-          <h1 className="text-xl leading-tight font-[800]">Pagi, {userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'} 👋</h1>
+          <h1 className="text-2xl leading-tight font-extrabold text-slate-900 mb-1">Halo, {userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'} 👋</h1>
+          <p className="text-sm font-medium text-slate-500">
+            {userProfile.goals.includes('body-goals') 
+              ? 'Konsisten hari ini, bangga esok hari. Terus berjuang! 🔥' 
+              : 'Satu langkah kecil hari ini berarti besar untuk kesehatanmu. ✨'}
+          </p>
         </div>
         <button
           onClick={() => onTabChange('profile')}
-          className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#1f6e64] text-white font-[850] border-0 text-sm shadow-lg shadow-[#1f6e64]/30 transition-all active:scale-95"
+          className="w-12 h-12 min-w-[48px] rounded-full bg-teal-600 text-white font-bold border-0 text-lg shadow-sm transition-all active:scale-95 flex items-center justify-center"
         >
-          {userProfile.fullName ? userProfile.fullName.substring(0, 2).toUpperCase() : 'TA'}
+          {userProfile.fullName ? userProfile.fullName.substring(0, 2).toUpperCase() : 'ME'}
         </button>
       </header>
 
-      {/* AI Briefing */}
-      <div className="bg-[#e6f2ec] border border-[#1f6e64]/20 rounded-2xl p-4 mb-5 flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-[#1f6e64] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-          <Zap size={16} />
+      {/* TOP WIDGET: Calendar & Gauge & Macros */}
+      <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-5 mb-6">
+        {/* Weekly Calendar Strip */}
+        <div className="flex justify-between items-center mb-6">
+          {daysOfWeek.map((day, idx) => (
+            <button 
+              key={idx} 
+              onClick={() => setSelectedDayIndex(idx)}
+              className={`w-8 h-12 flex flex-col items-center justify-center rounded-xl transition-all ${idx === selectedDayIndex ? 'bg-teal-600 text-white shadow-sm' : 'bg-transparent text-slate-400 hover:bg-slate-50'}`}
+            >
+              <span className="text-[10px] font-bold">{day}</span>
+              <span className={`text-xs font-extrabold mt-1 ${idx === selectedDayIndex ? 'text-white' : 'text-slate-800'}`}>
+                 {currentDate.getDate() - currentDayIndex + idx}
+              </span>
+            </button>
+          ))}
         </div>
-        <div>
-          <p className="text-[12px] font-[800] text-[#1f6e64] mb-0.5">Wawasan Hari Ini</p>
-          <p className="text-[13px] text-[#253532] leading-snug">
-            {userProfile.goals.includes('diabetes-management')
-              ? 'Gula darah Anda stabil minggu ini. Mari pertahankan dengan sarapan rendah IG.'
-              : userProfile.goals.includes('pregnancy')
-              ? 'Memasuki minggu ke-12, pastikan asupan Asam Folat harian terpenuhi hari ini.'
-              : 'Anda tidur kurang dari 7 jam semalam. Rekomendasi: Lakukan peregangan ringan sebelum sarapan.'}
-          </p>
-        </div>
-      </div>
 
-      {/* Up Next / Urgent Actions */}
+        {/* Semi-Circle Gauge Chart */}
+        <div className="flex flex-col items-center justify-center mb-6">
+          <div className="relative w-48 h-24 overflow-hidden">
+            <div className="absolute top-0 left-0 w-48 h-48 rounded-full border-[16px] border-slate-100 box-border" />
+            <div 
+              className="absolute top-0 left-0 w-48 h-48 rounded-full border-[16px] border-teal-500 box-border border-b-transparent border-r-transparent transition-all duration-1000"
+              style={{ transform: `rotate(${stepsPercent * 1.8 - 135}deg)` }}
+            />
+            <div className="absolute bottom-0 left-0 w-full flex flex-col items-center justify-end pb-2">
+              <span className="text-3xl font-extrabold text-slate-900 leading-none">{currentSteps.toLocaleString()}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">/ {dailyStepsGoal.toLocaleString()} langkah</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Macros */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-orange-50 rounded-2xl p-3 text-center">
+            <span className="block text-sm font-extrabold text-orange-500 mb-0.5">{macros.protein || 45}g</span>
+            <span className="block text-[10px] font-bold text-orange-800/60 uppercase">Protein</span>
+          </div>
+          <div className="bg-amber-50 rounded-2xl p-3 text-center">
+            <span className="block text-sm font-extrabold text-amber-500 mb-0.5">{consumedCalories} kcal</span>
+            <span className="block text-[10px] font-bold text-amber-800/60 uppercase">Kalori</span>
+          </div>
+          <div className="bg-indigo-50 rounded-2xl p-3 text-center">
+            <span className="block text-sm font-extrabold text-indigo-500 mb-0.5">{macros.fat || 35}g</span>
+            <span className="block text-[10px] font-bold text-indigo-800/60 uppercase">Lemak</span>
+          </div>
+        </div>
+      </section>
+
+      {/* LOGGED TODAY SECTION */}
+      {loggedMeals.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-3 px-1">Logged Today</h2>
+          <div className="space-y-3">
+            {loggedMeals.map((meal, idx) => (
+              <div key={idx} className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                  <Utensils size={20} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-slate-900">{meal.name}</h3>
+                  <p className="text-xs font-semibold text-slate-500">{meal.cal} kcal · {meal.prot}g P</p>
+                </div>
+                <CheckCircle2 size={20} className="text-teal-500 shrink-0" fill="#ccfbf1" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* QUICK MENU */}
       <section className="mb-6">
-        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Tugas Prioritas</h2>
-        <button
-          onClick={() => onSubViewChange('food-scanner')}
-          className="w-full flex items-center justify-between p-4 rounded-3xl bg-white shadow-sm border border-[#e6f2ec] transition-all active:scale-[0.98] hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#fff5e6] text-[#cc8800] flex items-center justify-center shrink-0">
-              <ScanBarcode size={24} />
+        <h2 className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-3 px-1">Quick Actions</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => onSubViewChange('food-scanner')}
+            className="p-4 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
+              <ScanBarcode size={20} />
             </div>
-            <div className="text-left">
-              <p className="text-[11px] font-[850] text-[#cc8800] uppercase">Tindakan</p>
-              <p className="text-[14px] font-[800] text-[#253532]">Scan Makanan Anda</p>
-              <p className="text-[12px] text-[#61716c]">Catat asupan nutrisi siang ini</p>
-            </div>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-[#f8faf7] flex items-center justify-center text-[#61716c]">
-            <ArrowRight size={18} />
-          </div>
-        </button>
-      </section>
+            <p className="text-xs font-bold text-slate-900">Scan Makanan</p>
+          </button>
 
-      {/* Focus Card */}
-      <section className="rounded-3xl p-5 text-white shadow-lg shadow-[#1f6e64]/20 mb-5" style={{ background: 'linear-gradient(135deg, #1f6e64 0%, #2c7a70 100%)' }}>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-            <Target size={16} className="text-white" />
-          </div>
-          <div>
-            <p className="text-[11px] font-[850] text-white/70 uppercase tracking-wider">Fokus Anda</p>
-            <p className="text-[12px] font-[700] text-white/90">{goalsText}</p>
-          </div>
-        </div>
-        <p className="text-[14px] font-[700] leading-snug">Tingkatkan kesehatan Anda dengan rencana personal AI kami! 🚀</p>
-      </section>
-
-      {/* Quick Actions */}
-      <section className="mb-5">
-        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Menu Cepat</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {isFeatureActive('meal-planner') && (
+          {userProfile.goals.includes('body-goals') && (
             <button
               onClick={() => onSubViewChange('meal-planner')}
-              className="p-4 rounded-2xl bg-[#fff5e6] border border-[#ffe6b3] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
-              <Utensils size={24} className="text-[#cc8800]" />
-              <p className="text-[12px] font-[800] text-[#cc8800]">Meal Plan</p>
+              className="p-4 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
+                <Utensils size={20} />
+              </div>
+              <p className="text-xs font-bold text-slate-900">Meal Planner</p>
             </button>
           )}
-          {isFeatureActive('fitness-routine') && (
-            <button
-              onClick={() => onSubViewChange('fitness-routine')}
-              className="p-4 rounded-2xl bg-[#e0e7ff] border border-[#c7d2fe] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
-              <Dumbbell size={24} className="text-[#4f46e5]" />
-              <p className="text-[12px] font-[800] text-[#4f46e5]">Workout</p>
-            </button>
-          )}
-          {isFeatureActive('sleep-tracker') && (
-            <button
-              onClick={() => onSubViewChange('sleep-tracker')}
-              className="p-4 rounded-2xl bg-[#f3e8ff] border border-[#e9d5ff] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
-              <Moon size={24} className="text-[#7c3aed]" />
-              <p className="text-[12px] font-[800] text-[#7c3aed]">Sleep Track</p>
-            </button>
-          )}
-          {isFeatureActive('meditation') && (
+
+          {userProfile.goals.includes('mental-health') && (
             <button
               onClick={() => onSubViewChange('mood-tracker')}
-              className="p-4 rounded-2xl bg-[#e0f2fe] border border-[#bae6fd] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
-              <Brain size={24} className="text-[#0369a1]" />
-              <p className="text-[12px] font-[800] text-[#0369a1]">Meditasi</p>
-            </button>
-          )}
-
-          {isFeatureActive('blood-pressure-tracking') && (
-            <button
-              onClick={() => onSubViewChange('bp-tracker')}
-              className="p-4 rounded-2xl bg-[#fee2e2] border border-[#fecaca] flex flex-col items-start gap-2 transition-all active:scale-[0.98] hover:shadow-sm">
-              <HeartPulse size={24} className="text-[#dc2626]" />
-              <p className="text-[12px] font-[800] text-[#dc2626]">BP Check</p>
+              className="p-4 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+                <Brain size={20} />
+              </div>
+              <p className="text-xs font-bold text-slate-900">Meditasi</p>
             </button>
           )}
         </div>
       </section>
 
-      {/* Weekly Progress */}
-      <section className="flex items-center gap-4 rounded-3xl bg-white p-5 shadow-lg shadow-black/5 mb-5">
-        <div className="relative w-[72px] h-[72px] flex-shrink-0">
-          <svg viewBox="0 0 72 72" className="w-full h-full -rotate-90">
-            <circle cx="36" cy="36" r="30" fill="none" stroke="#e6f2ec" strokeWidth="6" />
-            <circle
-              cx="36" cy="36" r="30"
-              fill="none"
-              stroke="#1f6e64"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={`${weeklyProgress * 1.885} ${188.5 - weeklyProgress * 1.885}`}
-            />
-          </svg>
-          <span className="absolute inset-0 grid place-items-center text-[16px] font-[900] text-[#1f6e64]">
-            {weeklyProgress}%
-          </span>
-        </div>
-        <div>
-          <p className="text-[11px] font-[850] text-[#61716c] uppercase">Progres Mingguan</p>
-          <p className="text-[14px] font-[800] text-[#253532] mb-1">Bagus! 🎉</p>
-          <p className="text-[12px] text-[#5f6f69]">72 dari 100 target terpenuhi</p>
-        </div>
-      </section>
-
-      {/* Metrics Grid */}
-      <section>
-        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Metrik Harian</h2>
-        <div className="grid grid-cols-2 gap-2">
+      {/* METRIK HARIAN */}
+      <section className="mb-6">
+        <h2 className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-3 px-1">Metrik Harian</h2>
+        <div className="grid grid-cols-2 gap-3">
           {mockMetrics.map(metric => {
             const Icon = metric.icon;
             return (
-              <div key={metric.id} className="rounded-2xl bg-white p-3 shadow-sm shadow-black/5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon size={18} color={metric.color} strokeWidth={2} />
-                  <p className="text-[11px] font-[700] text-[#5f6f69]">{metric.label}</p>
+              <div key={metric.id} className="rounded-3xl bg-white p-4 shadow-sm border border-slate-100">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center">
+                    <Icon size={16} color={metric.color} strokeWidth={2.5} />
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">{metric.label}</p>
                 </div>
-                <p className="text-[14px] font-[800] text-[#253532] mb-1">{metric.value}</p>
-                <p className="text-[11px] text-[#71807b]">{metric.target}</p>
+                <p className="text-lg font-extrabold text-slate-900 mb-0.5">{metric.value}</p>
+                <p className="text-[10px] text-slate-400 font-bold">{metric.target}</p>
               </div>
             );
           })}
         </div>
       </section>
+
     </div>
   );
 }

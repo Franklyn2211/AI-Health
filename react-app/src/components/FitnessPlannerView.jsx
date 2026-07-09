@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useHealth } from '../context/HealthContext';
-import { ArrowLeft, Play, Pause, CheckCircle2, ChevronRight, Timer, Zap, Flame } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CheckCircle2, ChevronRight, Timer, Zap, Flame, Dumbbell } from 'lucide-react';
 
-/* ── Goal-adaptive workouts ── */
 const WORKOUTS = {
   'pregnancy': {
     label: '🤰 Prenatal Safe',
@@ -49,7 +48,7 @@ const WORKOUTS = {
     },
     tips: '💡 Makan 40g protein 45 menit setelah latihan untuk maximise muscle protein synthesis.',
   },
-  'lose-weight': {
+  'body-goals': {
     label: '🔥 Fat Burn',
     accent: '#f59e0b',
     wod: {
@@ -117,14 +116,14 @@ const WORKOUTS = {
   },
 };
 
-export default function FitnessPlannerView({ onBack }) {
+export default function FitnessPlannerView({ onBack, onTabChange }) {
   const { userProfile } = useHealth();
   const goals = userProfile.goals || [];
 
   const getPlan = () => {
     if (goals.includes('pregnancy')) return WORKOUTS['pregnancy'];
     if (goals.includes('build-muscle')) return WORKOUTS['build-muscle'];
-    if (goals.includes('lose-weight')) return WORKOUTS['lose-weight'];
+    if (goals.includes('lose-weight') || goals.includes('body-goals')) return WORKOUTS['body-goals'];
     if (goals.includes('heart-health')) return WORKOUTS['heart-health'];
     return WORKOUTS['default'];
   };
@@ -136,43 +135,43 @@ export default function FitnessPlannerView({ onBack }) {
   const doneCount = Object.values(doneMap).filter(Boolean).length;
 
   return (
-    <div className="screen-scroll h-full overflow-y-auto px-5 pt-4 pb-24">
+    <div className="screen-scroll h-full overflow-y-auto px-5 pt-4 pb-24 bg-slate-50">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <button onClick={onBack} className="w-9 h-9 rounded-xl bg-[#f0f9f7] border border-[#d4e8e4] flex items-center justify-center text-[#1f6e64] transition-all active:scale-95">
+      <div className="flex items-center gap-3 mb-5">
+        <button onClick={onBack} className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 transition-all active:scale-95 shadow-sm">
           <ArrowLeft size={18} />
         </button>
         <div>
-          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest">Fitness </p>
-          <h1 className="text-[20px] font-[800] text-[#253532]">Workout Hari Ini</h1>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Fitness</p>
+          <h1 className="text-xl font-extrabold text-slate-900">Workout Hari Ini</h1>
         </div>
-        <span className="ml-auto text-[11px] font-[800] px-2.5 py-1 rounded-xl shrink-0"
+        <span className="ml-auto text-xs font-bold px-3 py-1.5 rounded-xl shrink-0 shadow-sm"
           style={{ background: plan.accent + '20', color: plan.accent }}>{plan.label}</span>
       </div>
 
       {/* WOD Hero Card */}
-      <section className="rounded-3xl overflow-hidden mb-5 shadow-lg"
-        style={{ background: `linear-gradient(135deg, ${plan.accent}dd 0%, ${plan.accent}88 100%)` }}>
-        <div className="p-5">
-          <p className="text-[11px] font-[850] text-white/70 uppercase mb-1">Workout of the Day</p>
-          <h2 className="text-[22px] font-[900] text-white mb-1">{wod.title}</h2>
-          <p className="text-[13px] text-white/80 mb-4">{wod.subtitle}</p>
-          <div className="grid grid-cols-3 gap-2 mb-4">
+      <section className="rounded-3xl overflow-hidden mb-6 shadow-sm border border-slate-100"
+        style={{ background: `linear-gradient(135deg, ${plan.accent} 0%, ${plan.accent}dd 100%)` }}>
+        <div className="p-6">
+          <p className="text-xs font-bold text-white/80 uppercase mb-2 tracking-wider">Workout of the Day</p>
+          <h2 className="text-2xl font-extrabold text-white mb-1">{wod.title}</h2>
+          <p className="text-sm text-white/90 mb-5 font-medium">{wod.subtitle}</p>
+          <div className="grid grid-cols-3 gap-3 mb-6">
             {[
               { icon: Timer, label: 'Durasi', val: `${wod.duration} Min` },
               { icon: Zap, label: 'Intensitas', val: wod.intensity },
               { icon: Flame, label: 'Kalori', val: `~${wod.calories}` },
             ].map(({ icon: Icon, label, val }) => (
-              <div key={label} className="bg-white/20 rounded-2xl p-2.5 text-center">
-                <Icon size={16} className="text-white mx-auto mb-1" />
-                <p className="text-[14px] font-[900] text-white">{val}</p>
-                <p className="text-[9px] text-white/70">{label}</p>
+              <div key={label} className="bg-black/10 backdrop-blur-sm rounded-2xl p-3 text-center border border-white/10">
+                <Icon size={20} className="text-white mx-auto mb-2" />
+                <p className="text-sm font-bold text-white">{val}</p>
+                <p className="text-[10px] font-semibold text-white/70 uppercase mt-0.5">{label}</p>
               </div>
             ))}
           </div>
           <button
             onClick={() => setStarted(!started)}
-            className="w-full flex items-center justify-center gap-2 bg-white font-[900] text-[14px] py-3.5 rounded-2xl transition-all active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 bg-white font-extrabold text-sm py-4 rounded-2xl transition-all active:scale-[0.98] shadow-sm"
             style={{ color: plan.accent }}
           >
             {started ? <><Pause size={18} /> Pause Workout</> : <><Play size={18} fill="currentColor" /> Mulai Workout</>}
@@ -182,14 +181,14 @@ export default function FitnessPlannerView({ onBack }) {
         {/* Progress bar */}
         {started && (
           <div>
-            <div className="h-1.5 bg-white/20">
+            <div className="h-1.5 bg-black/20">
               <div className="h-full bg-white transition-all duration-500"
                 style={{ width: `${(doneCount / wod.exercises.length) * 100}%` }} />
             </div>
-            <div className="bg-black/20 px-5 py-2 flex justify-between items-center">
-              <p className="text-white/80 text-[11px]">{doneCount}/{wod.exercises.length} gerakan selesai</p>
+            <div className="bg-black/30 backdrop-blur-sm px-6 py-3 flex justify-between items-center">
+              <p className="text-white font-bold text-xs">{doneCount}/{wod.exercises.length} gerakan selesai</p>
               {doneCount === wod.exercises.length && (
-                <span className="text-white text-[11px] font-[800] bg-white/20 px-2 py-0.5 rounded-lg">🎉 Selesai!</span>
+                <span className="text-white text-xs font-extrabold bg-white/20 px-3 py-1 rounded-xl">🎉 Selesai!</span>
               )}
             </div>
           </div>
@@ -197,59 +196,81 @@ export default function FitnessPlannerView({ onBack }) {
       </section>
 
       {/* Warmup */}
-      <div className="flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 p-3.5 mb-3">
-        <span className="text-xl">🌅</span>
+      <div className="flex items-center gap-4 rounded-3xl bg-amber-50 border border-amber-200 p-4 mb-4 shadow-sm">
+        <span className="text-2xl shrink-0">🌅</span>
         <div>
-          <p className="text-[11px] font-[850] text-amber-600 uppercase">Pemanasan</p>
-          <p className="text-[13px] font-[700] text-amber-800">{wod.warmup}</p>
+          <p className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-0.5">Pemanasan</p>
+          <p className="text-sm font-bold text-amber-900">{wod.warmup}</p>
         </div>
       </div>
 
       {/* Exercise List */}
-      <section className="mb-4">
-        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Latihan Utama</h2>
-        <div className="space-y-2">
+      <section className="mb-6">
+        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Latihan Utama</h2>
+        <div className="space-y-3">
           {wod.exercises.map((ex, i) => {
             const done = doneMap[i];
             return (
-              <button
-                key={i}
-                onClick={() => started && setDoneMap(p => ({ ...p, [i]: !p[i] }))}
-                className={`w-full flex items-center gap-3 p-4 rounded-2xl border text-left transition-all active:scale-[0.98] ${done ? 'border-[#1f6e64]/30 bg-[#f0f9f7]' : 'bg-white border-[#e6f2ec]'
-                  } ${!started ? 'opacity-90' : ''}`}
-              >
-                <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-xl`}>
-                  {ex.emoji}
+              <div key={i} className={`w-full flex flex-col p-4 rounded-3xl border transition-all ${done ? 'border-teal-100 bg-teal-50' : 'bg-white border-slate-100'} ${!started ? 'opacity-90' : 'shadow-sm'}`}>
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center text-2xl ${done ? 'bg-teal-100/50' : 'bg-slate-50'}`}>
+                    {ex.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className={`text-sm font-bold ${done ? 'line-through text-slate-500' : 'text-slate-900'} truncate`}>{ex.name}</p>
+                    <p className={`text-xs font-bold mt-0.5 mb-1 ${done ? 'text-slate-400' : 'text-teal-600'}`}>{ex.sets}</p>
+                    <p className="text-[10px] text-slate-500 font-semibold">{ex.muscle} · {ex.safe}</p>
+                  </div>
+                  <button onClick={() => started && setDoneMap(p => ({ ...p, [i]: !p[i] }))} className="shrink-0 p-2">
+                    {started ? (
+                      <CheckCircle2 size={24} className={done ? 'text-teal-600' : 'text-slate-200'} fill={done ? '#e6f9f5' : 'none'} />
+                    ) : (
+                      <ChevronRight size={20} className="text-slate-300" />
+                    )}
+                  </button>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] font-[800] ${done ? 'line-through text-[#61716c]' : 'text-[#253532]'}`}>{ex.name}</p>
-                  <p className="text-[11px] text-[#1f6e64] font-[700]">{ex.sets}</p>
-                  <p className="text-[10px] text-[#5f6f69]">{ex.muscle} · {ex.safe}</p>
-                </div>
-                {started ? (
-                  <CheckCircle2 size={22} className={done ? 'text-[#1f6e64]' : 'text-[#d4dcd9]'} fill={done ? '#e6f9f5' : 'none'} />
-                ) : (
-                  <ChevronRight size={18} className="text-[#d4dcd9]" />
+
+                {/* Video Placeholder (Nike Training Club inspired) */}
+                {started && (
+                  <div className="mt-4 w-full aspect-video bg-slate-800 rounded-2xl relative flex items-center justify-center overflow-hidden shadow-sm">
+                    {/* Simulated video background */}
+                    <div className="absolute inset-0 opacity-40 bg-gradient-to-br from-slate-700 to-slate-900" />
+                    <button className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center z-10 transition-transform active:scale-95 shadow-lg border border-white/10">
+                      <Play size={24} className="text-white ml-1" fill="currentColor" />
+                    </button>
+                    <div className="absolute bottom-3 left-3 flex gap-2">
+                      <span className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-[10px] font-bold border border-white/10 uppercase tracking-wider">Tutorial</span>
+                    </div>
+                  </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
       </section>
 
       {/* Cooldown */}
-      <div className="flex items-center gap-3 rounded-2xl bg-indigo-50 border border-indigo-200 p-3.5 mb-5">
-        <span className="text-xl">🧊</span>
+      <div className="flex items-center gap-4 rounded-3xl bg-indigo-50 border border-indigo-100 p-4 mb-6 shadow-sm">
+        <span className="text-2xl shrink-0">🧊</span>
         <div>
-          <p className="text-[11px] font-[850] text-indigo-600 uppercase">Pendinginan</p>
-          <p className="text-[13px] font-[700] text-indigo-800">{wod.cooldown}</p>
+          <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-0.5">Pendinginan</p>
+          <p className="text-sm font-bold text-indigo-900">{wod.cooldown}</p>
         </div>
       </div>
 
       {/* Trainer Tip */}
-      <div className="rounded-2xl p-4 bg-[#f0f9f7] border border-[#d4e8e4]">
-        <p className="text-[12px] text-[#1f6e64] leading-relaxed font-[500]">{plan.tips}</p>
+      <div className="rounded-3xl p-5 bg-teal-50 border border-teal-100 shadow-sm">
+        <p className="text-sm text-teal-800 leading-relaxed font-semibold">{plan.tips}</p>
       </div>
+
+      {/* FAB */}
+      <button 
+        onClick={() => onTabChange && onTabChange('clinic', { category: 'Personal Trainer' })}
+        className="fixed bottom-24 right-5 w-14 h-14 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-600/30 transition-all active:scale-90 z-40"
+        title="Cari Personal Trainer"
+      >
+        <Dumbbell size={24} />
+      </button>
     </div>
   );
 }
