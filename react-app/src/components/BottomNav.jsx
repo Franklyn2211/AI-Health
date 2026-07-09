@@ -4,7 +4,7 @@ const NAV_ITEMS = [
   { id: 'home', label: 'Beranda', Icon: Home },
   { id: 'lifestyle', label: 'Gaya Hidup', Icon: Activity },
   { id: 'ai', label: 'AI', isCenter: true },
-  { id: 'clinic', label: 'Klinik', Icon: Stethoscope },
+  { id: 'clinic', label: 'Tim Ahli', Icon: Stethoscope },
   { id: 'profile', label: 'Profil', Icon: User },
 ];
 

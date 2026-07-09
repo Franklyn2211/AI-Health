@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useHealth } from '../context/HealthContext';
-import { ArrowLeft, Play, Pause, CheckCircle2, ChevronRight, Timer, Zap, Flame } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CheckCircle2, ChevronRight, Timer, Zap, Flame, Dumbbell } from 'lucide-react';
 
 const WORKOUTS = {
   'pregnancy': {
@@ -116,7 +116,7 @@ const WORKOUTS = {
   },
 };
 
-export default function FitnessPlannerView({ onBack }) {
+export default function FitnessPlannerView({ onBack, onTabChange }) {
   const { userProfile } = useHealth();
   const goals = userProfile.goals || [];
 
@@ -262,6 +262,15 @@ export default function FitnessPlannerView({ onBack }) {
       <div className="rounded-3xl p-5 bg-teal-50 border border-teal-100 shadow-sm">
         <p className="text-sm text-teal-800 leading-relaxed font-semibold">{plan.tips}</p>
       </div>
+
+      {/* FAB */}
+      <button 
+        onClick={() => onTabChange && onTabChange('clinic', { category: 'Personal Trainer' })}
+        className="fixed bottom-24 right-5 w-14 h-14 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-600/30 transition-all active:scale-90 z-40"
+        title="Cari Personal Trainer"
+      >
+        <Dumbbell size={24} />
+      </button>
     </div>
   );
 }

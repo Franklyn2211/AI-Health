@@ -1,67 +1,68 @@
 import { useState } from 'react';
 import { useHealth } from '../context/HealthContext';
-import { ArrowLeft, Camera, Plus, X, ChefHat, Sparkles, Clock, Flame, Utensils, Coffee, Sun, Moon, Apple, CalendarDays, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Camera, Plus, X, ChefHat, Sparkles, Clock, Flame, Utensils, Coffee, Sun, Moon, Apple, CalendarDays, CheckCircle, Stethoscope } from 'lucide-react';
 
-const MEAL_PLANS = {
-  'pregnancy': {
-    dailyCal: 2200,
-    meals: {
-      breakfast: { title: 'Sarapan Tinggi Asam Folat', time: '07:30', foods: [{ name: 'Oatmeal + Pisang + Bayam', cal: 350, prot: 12, carbs: 55, fat: 8 }] },
-      lunch: { title: 'Makan Siang Kaya Zat Besi', time: '12:30', foods: [{ name: 'Nasi Merah + Hati Ayam + Brokoli', cal: 550, prot: 35, carbs: 60, fat: 15 }] },
-      dinner: { title: 'Makan Malam Ringan', time: '19:00', foods: [{ name: 'Ikan Salmon Panggang + Kentang', cal: 450, prot: 40, carbs: 30, fat: 18 }] },
-      snack: { title: 'Camilan Sehat', time: '15:30', foods: [{ name: 'Yogurt + Kacang Almond', cal: 200, prot: 10, carbs: 15, fat: 12 }] },
-    },
-  },
-  'build-muscle': {
-    dailyCal: 2800,
-    meals: {
-      breakfast: { title: 'Sarapan Padat Protein', time: '07:00', foods: [{ name: 'Telur Orak-Arik (4 butir) + Roti Gandum', cal: 450, prot: 32, carbs: 35, fat: 20 }] },
-      lunch: { title: 'Makan Siang Post-Workout', time: '13:00', foods: [{ name: 'Dada Ayam (200g) + Nasi Putih', cal: 600, prot: 55, carbs: 70, fat: 8 }] },
-      dinner: { title: 'Makan Malam Pemulihan', time: '19:30', foods: [{ name: 'Daging Sapi Tanpa Lemak + Pasta', cal: 700, prot: 45, carbs: 80, fat: 15 }] },
-      snack: { title: 'Camilan Tinggi Protein', time: '16:00', foods: [{ name: 'Protein Shake + Pisang', cal: 300, prot: 25, carbs: 40, fat: 2 }] },
-    },
-  },
+const MEAL_DATABASE = {
   'body-goals': {
-    dailyCal: 2000,
-    meals: {
-      breakfast: { title: 'Sarapan Rendah Kalori', time: '08:00', foods: [{ name: 'Smoothie Hijau (Bayam, Apel, Chia)', cal: 200, prot: 5, carbs: 30, fat: 6 }] },
-      lunch: { title: 'Makan Siang Mengenyangkan', time: '12:30', foods: [{ name: 'Salad Dada Ayam Rebus + Minyak Zaitun', cal: 350, prot: 30, carbs: 15, fat: 18 }] },
-      dinner: { title: 'Makan Malam Ringan', time: '18:30', foods: [{ name: 'Sup Bening Sayuran + Tahu', cal: 250, prot: 15, carbs: 20, fat: 10 }] },
-      snack: { title: 'Camilan Sehat', time: '15:00', foods: [{ name: 'Apel / Pir Segar', cal: 80, prot: 1, carbs: 20, fat: 0 }] },
+    'Carnivore/High protein': {
+      dailyCal: 2800,
+      meals: {
+        breakfast: { title: 'Steak & Telur', time: '07:30', foods: [{ name: 'Sirloin 200g + 3 Telur Mata Sapi', cal: 650, prot: 55, carbs: 2, fat: 40 }] },
+        lunch: { title: 'Makan Siang Padat', time: '12:30', foods: [{ name: 'Dada Ayam 300g + Butter', cal: 550, prot: 65, carbs: 0, fat: 25 }] },
+        dinner: { title: 'Makan Malam Pemulihan', time: '19:00', foods: [{ name: 'Salmon Panggang 250g', cal: 500, prot: 50, carbs: 0, fat: 30 }] },
+        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Jerky Sapi', cal: 150, prot: 20, carbs: 2, fat: 5 }] },
+      }
     },
-  },
-  'default': {
-    dailyCal: 2000,
-    meals: {
-      breakfast: { title: 'Sarapan Seimbang', time: '07:30', foods: [{ name: 'Roti Gandum + Telur Dadar', cal: 300, prot: 15, carbs: 30, fat: 12 }] },
-      lunch: { title: 'Makan Siang Penuh Energi', time: '12:30', foods: [{ name: 'Nasi + Ikan + Sayur Sop', cal: 500, prot: 28, carbs: 60, fat: 12 }] },
-      dinner: { title: 'Makan Malam Sehat', time: '19:00', foods: [{ name: 'Ayam Panggang + Salad', cal: 450, prot: 35, carbs: 20, fat: 15 }] },
-      snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Buah Segar', cal: 150, prot: 2, carbs: 35, fat: 1 }] },
+    'Vegan': {
+      dailyCal: 2200,
+      meals: {
+        breakfast: { title: 'Tofu Scramble', time: '07:30', foods: [{ name: 'Tahu Orak-Arik + Bayam', cal: 350, prot: 22, carbs: 15, fat: 18 }] },
+        lunch: { title: 'Protein Bowl', time: '12:30', foods: [{ name: 'Quinoa + Edamame + Tempe', cal: 550, prot: 30, carbs: 65, fat: 15 }] },
+        dinner: { title: 'Makan Malam Vegan', time: '19:00', foods: [{ name: 'Lentil Curry + Nasi Merah', cal: 450, prot: 25, carbs: 60, fat: 10 }] },
+        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Protein Shake Vegan', cal: 200, prot: 25, carbs: 10, fat: 5 }] },
+      }
     },
+    'default': {
+      dailyCal: 2400,
+      meals: {
+        breakfast: { title: 'Sarapan Padat Protein', time: '07:30', foods: [{ name: 'Telur Orak-Arik (4 butir) + Roti Gandum', cal: 450, prot: 32, carbs: 35, fat: 20 }] },
+        lunch: { title: 'Makan Siang Post-Workout', time: '12:30', foods: [{ name: 'Dada Ayam (200g) + Nasi Putih', cal: 600, prot: 55, carbs: 70, fat: 8 }] },
+        dinner: { title: 'Makan Malam Pemulihan', time: '19:00', foods: [{ name: 'Daging Sapi Tanpa Lemak + Pasta', cal: 700, prot: 45, carbs: 80, fat: 15 }] },
+        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Protein Shake + Pisang', cal: 300, prot: 25, carbs: 40, fat: 2 }] },
+      }
+    }
   },
+  'mental-health': {
+    'default': {
+      dailyCal: 2000,
+      meals: {
+        breakfast: { title: 'Sarapan Mood Booster', time: '07:30', foods: [{ name: 'Oatmeal + Berries + Walnut', cal: 400, prot: 12, carbs: 55, fat: 16 }] },
+        lunch: { title: 'Omega-3 Lunch', time: '12:30', foods: [{ name: 'Salmon Salad + Olive Oil', cal: 450, prot: 35, carbs: 15, fat: 28 }] },
+        dinner: { title: 'Makan Malam Ringan', time: '19:00', foods: [{ name: 'Sup Labu + Roti Gandum', cal: 350, prot: 10, carbs: 60, fat: 8 }] },
+        snack: { title: 'Camilan Relaxing', time: '15:30', foods: [{ name: 'Dark Chocolate + Chamomile', cal: 150, prot: 2, carbs: 15, fat: 10 }] },
+      }
+    }
+  },
+  'immune-booster': {
+    'default': {
+      dailyCal: 2100,
+      meals: {
+        breakfast: { title: 'Vitamin C Start', time: '07:30', foods: [{ name: 'Smoothie Jeruk + Kiwi + Yogurt', cal: 300, prot: 15, carbs: 45, fat: 5 }] },
+        lunch: { title: 'Makan Siang Antioksidan', time: '12:30', foods: [{ name: 'Nasi Merah + Ayam Kunyit + Brokoli', cal: 550, prot: 35, carbs: 65, fat: 12 }] },
+        dinner: { title: 'Makan Malam Hangat', time: '19:00', foods: [{ name: 'Sup Ayam Jahe + Jamur', cal: 400, prot: 30, carbs: 25, fat: 15 }] },
+        snack: { title: 'Camilan Imun', time: '15:30', foods: [{ name: 'Kacang Almond + Teh Hijau', cal: 200, prot: 8, carbs: 10, fat: 15 }] },
+      }
+    }
+  }
 };
 
 const MEAL_ORDER = ['breakfast', 'snack', 'lunch', 'dinner'];
-const MEAL_ICONS = { 
-  breakfast: <Coffee size={18} />, 
-  snack: <Apple size={18} />, 
-  lunch: <Sun size={18} />, 
-  dinner: <Moon size={18} /> 
-};
+const MEAL_ICONS = { breakfast: <Coffee size={18} />, snack: <Apple size={18} />, lunch: <Sun size={18} />, dinner: <Moon size={18} /> };
 
-export default function MealPlannerView({ onBack }) {
-  const { userProfile, addConsumedCalories } = useHealth();
+export default function MealPlannerView({ onBack, onTabChange }) {
+  const { userProfile, addLoggedMeal } = useHealth();
   const [activeTab, setActiveTab] = useState('schedule');
   const [selectedMeal, setSelectedMeal] = useState(null);
-
-  const goals = userProfile.goals || [];
-  const getPlan = () => {
-    if (goals.includes('pregnancy')) return MEAL_PLANS['pregnancy'];
-    if (goals.includes('build-muscle')) return MEAL_PLANS['build-muscle'];
-    if (goals.includes('lose-weight') || goals.includes('body-goals')) return MEAL_PLANS['body-goals'];
-    return MEAL_PLANS['default'];
-  };
-  const plan = getPlan();
 
   const [ingredients, setIngredients] = useState([]);
   const [inputVal, setInputVal] = useState('');
@@ -69,16 +70,17 @@ export default function MealPlannerView({ onBack }) {
   const [recipes, setRecipes] = useState([]);
 
   const generateRecipes = (ingList) => {
-    const isMuscle = goals.includes('build-muscle');
     return [
       {
         id: 1,
-        name: isMuscle ? 'Dada Ayam Panggang Protein' : 'Tumis Sehat Rumahan',
+        name: 'Dada Ayam Panggang Protein',
         match: '90%',
         time: '20 mnt',
-        cal: isMuscle ? 450 : 320,
+        cal: 450,
         missing: ['Bawang Putih'],
-        tags: [isMuscle ? 'Tinggi Protein' : 'Rendah Gula'],
+        tags: ['Tinggi Protein'],
+        ingredients: ['200g Dada Ayam', '1 sdm Minyak Zaitun', 'Garam & Merica', '1 siung Bawang Putih (Opsional)'],
+        steps: ['Panaskan wajan dengan minyak zaitun.', 'Bumbui dada ayam dengan garam, merica, dan bawang putih halus.', 'Panggang ayam selama 7-10 menit tiap sisi hingga matang sempurna.', 'Sajikan selagi hangat.']
       },
       {
         id: 2,
@@ -88,6 +90,8 @@ export default function MealPlannerView({ onBack }) {
         cal: 180,
         missing: ['Kaldu Jamur'],
         tags: ['Cepat', 'Rendah Kalori'],
+        ingredients: ['1 ikat Bayam', '2 butir Telur rebus', '1 buah Tomat', 'Kaldu Jamur'],
+        steps: ['Rebus air hingga mendidih.', 'Masukkan tomat potong dan bayam segar.', 'Tambahkan kaldu jamur secukupnya.', 'Sajikan bersama irisan telur rebus di atasnya.']
       }
     ];
   };
@@ -118,8 +122,32 @@ export default function MealPlannerView({ onBack }) {
     }, 1500);
   };
 
+  // Filter logic based on goals and diet methods
+  const getPlan = () => {
+    const goals = userProfile.goals || [];
+    const diet = userProfile.diet || 'default';
+    
+    let goalKey = 'body-goals'; // Default
+    if (goals.includes('mental-health')) goalKey = 'mental-health';
+    if (goals.includes('immune-booster')) goalKey = 'immune-booster';
+    if (goals.includes('body-goals')) goalKey = 'body-goals';
+
+    const goalPlans = MEAL_DATABASE[goalKey] || MEAL_DATABASE['body-goals'];
+    return goalPlans[diet] || goalPlans['default'] || MEAL_DATABASE['body-goals']['default'];
+  };
+
+  const plan = getPlan();
+
+  const handleAddToDiary = () => {
+    if (selectedMeal) {
+      addLoggedMeal(selectedMeal);
+      setSelectedMeal(null);
+    }
+  };
+
   return (
     <div className="screen-scroll h-full overflow-y-auto px-5 pt-4 pb-24 bg-slate-50 relative">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-5">
         <button onClick={onBack} className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 transition-all active:scale-95 shadow-sm">
           <ArrowLeft size={18} />
@@ -131,20 +159,10 @@ export default function MealPlannerView({ onBack }) {
       </div>
 
       <div className="flex bg-white border border-slate-100 shadow-sm rounded-2xl p-1 mb-6">
-        <button
-          onClick={() => setActiveTab('schedule')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'schedule' ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-500'
-          }`}
-        >
+        <button onClick={() => setActiveTab('schedule')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'schedule' ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-500'}`}>
           <CalendarDays size={16} /> Jadwal Harian
         </button>
-        <button
-          onClick={() => setActiveTab('scanner')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'scanner' ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-500'
-          }`}
-        >
+        <button onClick={() => setActiveTab('scanner')} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === 'scanner' ? 'bg-teal-50 text-teal-700 shadow-sm' : 'text-slate-500'}`}>
           <Camera size={16} /> Scan Bahan
         </button>
       </div>
@@ -163,7 +181,6 @@ export default function MealPlannerView({ onBack }) {
             {MEAL_ORDER.map(mealType => {
               const meal = plan.meals[mealType];
               if (!meal) return null;
-              
               return (
                 <div key={mealType} className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
                   <div className="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
@@ -177,33 +194,16 @@ export default function MealPlannerView({ onBack }) {
                       </div>
                     </div>
                   </div>
-                  
                   {meal.foods.map((food, idx) => (
-                    <button 
-                      key={idx} 
-                      onClick={() => setSelectedMeal(food)}
-                      className="w-full text-left bg-slate-50 rounded-2xl p-4 transition-all active:scale-[0.98] border border-transparent hover:border-teal-100 hover:bg-teal-50/50"
-                    >
+                    <button key={idx} onClick={() => setSelectedMeal(food)} className="w-full text-left bg-slate-50 rounded-2xl p-4 transition-all active:scale-[0.98] border border-transparent hover:border-teal-100 hover:bg-teal-50/50">
                       <div className="flex justify-between items-start mb-2">
                         <p className="text-sm font-bold text-slate-900 leading-snug">{food.name}</p>
-                        <span className="text-xs font-bold text-teal-700 shrink-0 bg-teal-100/50 px-2.5 py-1 rounded-xl">
-                          {food.cal} kcal
-                        </span>
+                        <span className="text-xs font-bold text-teal-700 shrink-0 bg-teal-100/50 px-2.5 py-1 rounded-xl">{food.cal} kcal</span>
                       </div>
-                      
                       <div className="flex gap-4">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-red-400" />
-                          <span className="text-[10px] font-bold text-slate-600 uppercase">P: {food.prot}g</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-orange-400" />
-                          <span className="text-[10px] font-bold text-slate-600 uppercase">K: {food.carbs}g</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-indigo-400" />
-                          <span className="text-[10px] font-bold text-slate-600 uppercase">L: {food.fat}g</span>
-                        </div>
+                        <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-400" /><span className="text-[10px] font-bold text-slate-600 uppercase">P: {food.prot}g</span></div>
+                        <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-orange-400" /><span className="text-[10px] font-bold text-slate-600 uppercase">K: {food.carbs}g</span></div>
+                        <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-indigo-400" /><span className="text-[10px] font-bold text-slate-600 uppercase">L: {food.fat}g</span></div>
                       </div>
                     </button>
                   ))}
@@ -341,33 +341,48 @@ export default function MealPlannerView({ onBack }) {
               <button onClick={() => setSelectedMeal(null)} className="p-2 bg-slate-100 rounded-full text-slate-500 transition-all active:scale-95"><X size={20}/></button>
             </div>
             
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-wrap gap-3 mb-4">
               <span className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Flame size={16}/> {selectedMeal.cal} kcal</span>
-              <span className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Clock size={16}/> 15 min</span>
-            </div>
-            
-            <div className="mb-6">
-              <h3 className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-wider">Cara Membuat</h3>
-              <ol className="list-decimal pl-5 text-sm text-slate-700 mb-2 space-y-2 font-medium">
-                <li>Siapkan bahan-bahan segar sesuai resep.</li>
-                <li>Panaskan wajan dengan sedikit minyak zaitun.</li>
-                <li>Masak hingga matang merata dan bumbui sesuai selera.</li>
-                <li>Angkat dan sajikan selagi hangat.</li>
-              </ol>
+              <span className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Clock size={16}/> {selectedMeal.time || '15 mnt'}</span>
             </div>
 
-            <button 
-              onClick={() => {
-                addConsumedCalories(selectedMeal.cal);
-                setSelectedMeal(null);
-              }}
-              className="w-full h-14 bg-teal-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm"
-            >
+            <div className="mb-4">
+              <h3 className="text-xs font-bold text-slate-900 uppercase mb-2">Bahan-Bahan</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {(selectedMeal.ingredients || ['Bahan protein utama', 'Sayuran segar pelengkap', 'Bumbu masakan sehat', 'Sumber karbohidrat']).map((ing, idx) => (
+                  <li key={idx} className="text-sm text-slate-600 font-medium">{ing}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mb-6 max-h-40 overflow-y-auto pr-2">
+              <h3 className="text-xs font-bold text-slate-900 uppercase mb-2">Cara Membuat</h3>
+              <div className="space-y-3">
+                {(selectedMeal.steps || ['Siapkan semua bahan yang dibutuhkan.', 'Masak bahan utama hingga tingkat kematangan yang diinginkan.', 'Tambahkan bumbu secukupnya.', 'Sajikan selagi hangat.']).map((step, idx) => (
+                  <div key={idx} className="flex gap-3">
+                    <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 font-bold text-xs flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </div>
+                    <p className="text-sm text-slate-600 font-medium leading-relaxed">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <button onClick={handleAddToDiary} className="w-full h-14 bg-teal-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
               <CheckCircle size={20}/> Add to Diary
             </button>
           </div>
         </div>
       )}
+      {/* FAB */}
+      <button 
+        onClick={() => onTabChange && onTabChange('clinic', { category: 'Ahli Gizi' })}
+        className="fixed bottom-24 right-5 w-14 h-14 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-teal-600/30 transition-all active:scale-90 z-40"
+        title="Tanya Ahli Gizi"
+      >
+        <Stethoscope size={24} />
+      </button>
     </div>
   );
 }

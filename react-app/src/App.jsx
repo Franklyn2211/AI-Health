@@ -6,7 +6,7 @@ import OnboardingForm from './components/OnboardingForm';
 import HomeView from './components/HomeView';
 import LifestyleView from './components/LifestyleView';
 import ConsultationAIView from './components/ConsultationAIView';
-import DoctorClinicView from './components/DoctorClinicView';
+import ExpertTeamView from './components/ExpertTeamView';
 import ProfileView from './components/ProfileView';
 import FoodScannerView from './components/FoodScannerView';
 import MealPlannerView from './components/MealPlannerView';
@@ -25,9 +25,12 @@ function AppContent() {
     if (savedTab) setActiveTab(savedTab);
   }, []);
 
-  const handleTabChange = (tabId) => {
+  const [activeTabParams, setActiveTabParams] = useState(null);
+
+  const handleTabChange = (tabId, params = null) => {
     setActiveTab(tabId);
     setActiveSubView(null);
+    setActiveTabParams(params);
     localStorage.setItem('activeTab', tabId);
   };
 
@@ -45,6 +48,7 @@ function AppContent() {
           width: 'min(100%, 410px)',
           height: 'min(860px, calc(100vh - 56px))',
           minHeight: '740px',
+          transform: 'translateZ(0)'
         }}
         aria-label="VIN AI app"
       >
@@ -57,8 +61,8 @@ function AppContent() {
             <>
               {/* ── Sub-Views ── */}
               {activeSubView === 'food-scanner'    && <FoodScannerView    onBack={handleBackFromSubView} />}
-              {activeSubView === 'meal-planner'    && <MealPlannerView    onBack={handleBackFromSubView} />}
-              {activeSubView === 'fitness-routine' && <FitnessPlannerView onBack={handleBackFromSubView} />}
+              {activeSubView === 'meal-planner'    && <MealPlannerView    onBack={handleBackFromSubView} onTabChange={handleTabChange} />}
+              {activeSubView === 'fitness-routine' && <FitnessPlannerView onBack={handleBackFromSubView} onTabChange={handleTabChange} />}
               {activeSubView === 'sleep-tracker'   && <SleepTrackerView   onBack={handleBackFromSubView} />}
               {activeSubView === 'mood-tracker'    && <MoodTrackerView    onBack={handleBackFromSubView} />}
               {activeSubView === 'doctor-list'     && <DoctorListView     onBack={handleBackFromSubView} />}
@@ -69,7 +73,7 @@ function AppContent() {
                   {activeTab === 'home'      && <HomeView      onTabChange={handleTabChange} onSubViewChange={handleSubViewChange} />}
                   {activeTab === 'lifestyle' && <LifestyleView onTabChange={handleTabChange} onSubViewChange={handleSubViewChange} />}
                   {activeTab === 'ai'        && <ConsultationAIView onTabChange={handleTabChange} />}
-                  {activeTab === 'clinic'    && <DoctorClinicView   onTabChange={handleTabChange} onSubViewChange={handleSubViewChange} />}
+                  {activeTab === 'clinic'    && <ExpertTeamView     onTabChange={handleTabChange} onSubViewChange={handleSubViewChange} params={activeTabParams} />}
                   {activeTab === 'profile'   && <ProfileView        onTabChange={handleTabChange} />}
                 </>
               )}

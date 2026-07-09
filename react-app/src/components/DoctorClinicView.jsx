@@ -21,28 +21,6 @@ export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
                 <h1 className="text-2xl leading-tight font-[800]">Telemedis</h1>
             </header>
 
-            {/* Tab Navigation */}
-            <div className="grid grid-cols-2 gap-2 mb-6">
-                <button
-                    onClick={() => setActiveTab('consult')}
-                    className={`py-3 px-4 rounded-xl font-[800] text-[13px] border-2 transition-all ${activeTab === 'consult'
-                        ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
-                        : 'bg-white text-[#253532] border-[#e6f2ec]'
-                        }`}
-                >
-                    💬 Konsultasi
-                </button>
-                <button
-                    onClick={() => setActiveTab('emr')}
-                    className={`py-3 px-4 rounded-xl font-[800] text-[13px] border-2 transition-all ${activeTab === 'emr'
-                        ? 'bg-[#1f6e64] text-white border-[#1f6e64]'
-                        : 'bg-white text-[#253532] border-[#e6f2ec]'
-                        }`}
-                >
-                    🏥 EMR Sync
-                </button>
-            </div>
-
             {/* Consultation Tab */}
             {activeTab === 'consult' && (
                 <div className="space-y-4">
@@ -122,66 +100,6 @@ export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
                                     </button>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* EMR Sync Tab */}
-            {activeTab === 'emr' && (
-                <div className="space-y-4">
-                    {/* EMR Info Card */}
-                    <div className="p-5 rounded-2xl bg-[#f0f9f7] border-2 border-[#1f6e64]">
-                        <div className="flex items-start gap-3 mb-3">
-                            <span className="text-2xl">🏥</span>
-                            <div>
-                                <h3 className="text-[14px] font-[800] text-[#1f6e64] mb-1">Integrasi Rumah Sakit (EMR Sync)</h3>
-                                <p className="text-[13px] text-[#253532] leading-relaxed">
-                                    Sistem kami menggunakan NIK Anda untuk membagikan laporan kesehatan AI secara aman ke dokter di rumah sakit terdaftar.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 p-3 rounded-lg bg-white/50 border border-[#d4e8e4]">
-                            <p className="text-[11px] font-[700] text-[#1f6e64] uppercase mb-2">Data Anda Terlindungi dengan:</p>
-                            <ul className="space-y-1 text-[12px] text-[#253532]">
-                                <li>✓ Enkripsi End-to-End</li>
-                                <li>✓ Standar HIPAA/Privacy</li>
-                                <li>✓ Kontrol Akses Penuh</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    {/* Connected Hospitals */}
-                    <div>
-                        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Rumah Sakit Terhubung</h2>
-                        <div className="space-y-2">
-                            {['City General Hospital', 'Heart Care Clinic', 'Wellness Medical Center'].map((hospital, idx) => (
-                                <div key={idx} className="p-4 rounded-2xl bg-white shadow-sm shadow-black/5 border border-[#e6f2ec]">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-2xl">🏥</span>
-                                            <div>
-                                                <p className="text-[14px] font-[800] text-[#253532]">{hospital}</p>
-                                                <p className="text-[12px] text-[#5f6f69]">Verifikasi status...</p>
-                                            </div>
-                                        </div>
-                                        <span className="text-[12px] font-[800] text-[#10b981]">✓ Aktif</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Your NIK Info */}
-                    <div className="p-4 rounded-2xl bg-[#ffe0e6] border border-[#ffb3cc]">
-                        <div className="flex items-start gap-2">
-                            <AlertCircle size={18} color="#dc2626" />
-                            <div>
-                                <p className="text-[12px] font-[800] text-[#dc2626] mb-1">NIK Terdaftar</p>
-                                <p className="text-[13px] text-[#953735]">{userProfile.nik || 'Belum diisi'}</p>
-                                <p className="text-[11px] text-[#7f1d1d] mt-1">Gunakan untuk sinkronisasi rekam medis elektronik</p>
-                            </div>
                         </div>
                     </div>
                 </div>

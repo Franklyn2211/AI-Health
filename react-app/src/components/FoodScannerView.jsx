@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useHealth } from '../context/HealthContext';
-import { ArrowLeft, Camera, Zap, CheckCircle2, RotateCcw, Utensils, Minus, Plus, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Camera, Zap, CheckCircle2, RotateCcw, Utensils, Minus, Plus, PlusCircle, X, Flame, Clock } from 'lucide-react';
 
 const SUGGESTED_FOODS = [
-    { id: 1, name: 'Dada Ayam Rebus', calories: 165, protein: 31, carbs: 0, fat: 3.6, tag: 'High Protein', goal: 'build-muscle' },
-    { id: 2, name: 'Telur Rebus', calories: 78, protein: 6, carbs: 0.6, fat: 5, tag: 'Keto Friendly', goal: 'default' },
-    { id: 3, name: 'Salad Bayam + Salmon', calories: 350, protein: 30, carbs: 10, fat: 20, tag: 'Asam Folat', goal: 'pregnancy' },
-    { id: 4, name: 'Oatmeal Buah', calories: 250, protein: 7, carbs: 45, fat: 4, tag: 'Kaya Serat', goal: 'lose-weight' }
+    { id: 1, name: 'Dada Ayam Rebus', calories: 165, protein: 31, carbs: 0, fat: 3.6, tag: 'High Protein', goal: 'build-muscle', time: '15 mnt', ingredients: ['200g Dada Ayam', 'Air untuk merebus', 'Garam secukupnya'], steps: ['Didihkan air dalam panci.', 'Masukkan dada ayam dan beri sedikit garam.', 'Rebus selama 12-15 menit hingga matang.', 'Tiriskan dan potong sesuai selera.'] },
+    { id: 2, name: 'Telur Rebus', calories: 78, protein: 6, carbs: 0.6, fat: 5, tag: 'Keto Friendly', goal: 'default', time: '10 mnt', ingredients: ['2 butir Telur', 'Air'], steps: ['Rebus air hingga mendidih.', 'Masukkan telur secara perlahan.', 'Rebus selama 8-10 menit untuk tingkat kematangan pas.', 'Angkat dan rendam di air dingin sebelum dikupas.'] },
+    { id: 3, name: 'Salad Bayam + Salmon', calories: 350, protein: 30, carbs: 10, fat: 20, tag: 'Asam Folat', goal: 'pregnancy', time: '20 mnt', ingredients: ['1 ikat Bayam segar', '150g Ikan Salmon', 'Minyak Zaitun', 'Perasan Lemon'], steps: ['Panggang salmon dengan sedikit minyak zaitun hingga matang.', 'Cuci bersih bayam dan tiriskan.', 'Campur bayam dengan salmon yang sudah disuwir atau dipotong.', 'Beri perasan lemon sebagai dressing.'] },
+    { id: 4, name: 'Oatmeal Buah', calories: 250, protein: 7, carbs: 45, fat: 4, tag: 'Kaya Serat', goal: 'lose-weight', time: '10 mnt', ingredients: ['50g Rolled Oats', '150ml Susu Rendah Lemak', '1 buah Pisang', 'Buah Berries secukupnya'], steps: ['Campur oats dan susu di mangkuk.', 'Panaskan di microwave selama 2 menit (atau masak di panci kecil).', 'Potong-potong pisang dan tambahkan berries di atasnya.', 'Sajikan selagi hangat.'] }
 ];
 
 function MacroBar({ label, value, max, color }) {
@@ -25,7 +25,7 @@ function MacroBar({ label, value, max, color }) {
 }
 
 export default function FoodScannerView({ onBack }) {
-    const { userProfile, addConsumedCalories } = useHealth();
+    const { userProfile, addLoggedMeal } = useHealth();
     const goals = userProfile.goals || [];
     const isPregnancy = goals.includes('pregnancy');
     const goals_cal = goals.includes('lose-weight') ? 1500 : goals.includes('build-muscle') ? 2800 : 2000;
@@ -33,6 +33,7 @@ export default function FoodScannerView({ onBack }) {
     const [scanning, setScanning] = useState(false);
     const [scanned, setScanned] = useState([]);
     const [lastAdded, setLastAdded] = useState(null);
+    const [selectedFood, setSelectedFood] = useState(null);
 
     const simulateScan = () => {
         setScanning(true);
@@ -62,7 +63,13 @@ export default function FoodScannerView({ onBack }) {
     }, { cal: 0, prot: 0, carbs: 0, fat: 0 });
 
     const handleAddToDiary = () => {
-        addConsumedCalories(Math.round(totals.cal));
+        addLoggedMeal({ 
+            name: "Pindaian Kamera", 
+            cal: Math.round(totals.cal),
+            prot: Math.round(totals.prot),
+            carbs: Math.round(totals.carbs),
+            fat: Math.round(totals.fat)
+        });
         setScanned([]);
         setLastAdded('Total kalori ke Diary');
         setTimeout(() => setLastAdded(null), 3000);
@@ -218,7 +225,7 @@ export default function FoodScannerView({ onBack }) {
                 </h2>
                 <div className="space-y-3">
                     {suggestedFoods.map(food => (
-                        <div key={food.id} className="flex items-center gap-4 rounded-3xl bg-white border border-slate-100 p-4 shadow-sm">
+                        <div key={food.id} onClick={() => setSelectedFood(food)} className="flex items-center gap-4 rounded-3xl bg-white border border-slate-100 p-4 shadow-sm cursor-pointer transition-all active:scale-[0.98] hover:border-teal-100">
                             <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center shrink-0">
                                 <Utensils size={20} />
                             </div>
@@ -229,7 +236,7 @@ export default function FoodScannerView({ onBack }) {
                                 </div>
                                 <p className="text-[11px] font-medium text-slate-500">{food.calories} kcal · P:{food.protein}g · K:{food.carbs}g · L:{food.fat}g</p>
                             </div>
-                            <button onClick={() => addFood(food)}
+                            <button onClick={(e) => { e.stopPropagation(); addFood(food); }}
                                 className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center transition-all active:scale-90 shrink-0 hover:bg-teal-600 hover:text-white">
                                 <Plus size={18} />
                             </button>
@@ -237,6 +244,54 @@ export default function FoodScannerView({ onBack }) {
                     ))}
                 </div>
             </section>
+
+            {/* Detail View Modal */}
+            {selectedFood && (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[32px] w-full max-w-md p-6 shadow-2xl animate-in slide-in-from-bottom-8 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-start mb-5">
+                            <h2 className="text-xl font-extrabold text-slate-900 pr-4 leading-tight">{selectedFood.name}</h2>
+                            <button onClick={() => setSelectedFood(null)} className="p-2 bg-slate-100 rounded-full text-slate-500 transition-all active:scale-95"><X size={20}/></button>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-3 mb-4">
+                            <span className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Flame size={16}/> {selectedFood.calories} kcal</span>
+                            <span className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Clock size={16}/> {selectedFood.time || '15 mnt'}</span>
+                        </div>
+
+                        {selectedFood.ingredients && (
+                            <div className="mb-4">
+                                <h3 className="text-xs font-bold text-slate-900 uppercase mb-2">Bahan-Bahan</h3>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    {selectedFood.ingredients.map((ing, idx) => (
+                                        <li key={idx} className="text-sm text-slate-600 font-medium">{ing}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {selectedFood.steps && (
+                            <div className="mb-6">
+                                <h3 className="text-xs font-bold text-slate-900 uppercase mb-2">Cara Membuat</h3>
+                                <div className="space-y-3">
+                                    {selectedFood.steps.map((step, idx) => (
+                                        <div key={idx} className="flex gap-3">
+                                            <div className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 font-bold text-xs flex items-center justify-center shrink-0">
+                                                {idx + 1}
+                                            </div>
+                                            <p className="text-sm text-slate-600 font-medium leading-relaxed">{step}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        
+                        <button onClick={() => { addFood(selectedFood); setSelectedFood(null); }} className="w-full h-14 bg-teal-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                            <PlusCircle size={20}/> Add to Scanned
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

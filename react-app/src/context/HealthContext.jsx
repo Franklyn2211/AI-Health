@@ -4,17 +4,16 @@ const HealthContext = createContext();
 
 const AVAILABLE_GOALS = [
     { id: 'body-goals',          label: 'Body Goals', features: ['weight-tracking', 'meal-planner', 'fitness-routine'] },
-    { id: 'sleep',               label: 'Perbaiki Kualitas Tidur', features: ['sleep-tracker', 'meditation'] },
-    { id: 'stress',              label: 'Kurangi Stres', features: ['meditation'] },
-    { id: 'pregnancy',           label: 'Kehamilan', features: ['nutrition-guide'] },
-    { id: 'heart',               label: 'Kesehatan Jantung', features: ['health-monitor'] },
-    { id: 'diabetes',            label: 'Manajemen Diabetes', features: ['blood-sugar-tracking', 'meal-planner'] },
+    { id: 'mental-health',       label: 'Mental Health', features: ['sleep-tracker', 'meditation'] },
+    { id: 'immune-booster',      label: 'Immune Booster', features: ['health-monitor', 'nutrition-guide'] }
 ];
 
 export function HealthProvider({ children }) {
     const [userProfile, setUserProfile] = useState({
         fullName: '',
-        contact: '',
+        email: '',
+        phone: '',
+        password: '',
         goals: [],
         healthConditions: [],
         allergies: [],
@@ -28,12 +27,17 @@ export function HealthProvider({ children }) {
     });
 
     const [hasOnboarded, setHasOnboarded] = useState(false);
+    
+    // Nutrition state
     const [consumedCalories, setConsumedCalories] = useState(0);
+    const [macros, setMacros] = useState({ protein: 0, carbs: 0, fat: 0 });
+    const [loggedMeals, setLoggedMeals] = useState([]);
 
-    const completeOnboarding = useCallback((fullName, contact, selectedGoals, extras = {}) => {
+    const completeOnboarding = useCallback((fullName, email, phone, selectedGoals, extras = {}) => {
         const profile = {
             fullName,
-            contact,
+            email,
+            phone,
             goals: selectedGoals,
             healthConditions: extras.healthConditions || [],
             allergies: extras.allergies || [],
@@ -61,8 +65,14 @@ export function HealthProvider({ children }) {
         });
     }, []);
 
-    const addConsumedCalories = useCallback((cals) => {
-        setConsumedCalories(prev => prev + cals);
+    const addLoggedMeal = useCallback((meal) => {
+        setLoggedMeals(prev => [meal, ...prev]);
+        setConsumedCalories(prev => prev + (meal.cal || 0));
+        setMacros(prev => ({
+            protein: prev.protein + (meal.prot || 0),
+            carbs: prev.carbs + (meal.carbs || 0),
+            fat: prev.fat + (meal.fat || 0)
+        }));
     }, []);
 
     const getActiveFeatures = useCallback(() => {
@@ -88,16 +98,18 @@ export function HealthProvider({ children }) {
             userProfile,
             hasOnboarded,
             consumedCalories,
+            macros,
+            loggedMeals,
             completeOnboarding,
             updateProfile,
             updateGoals,
-            addConsumedCalories,
+            addLoggedMeal,
             getActiveFeatures,
             getGoalLabel,
             isFeatureActive,
             AVAILABLE_GOALS,
         }),
-        [userProfile, hasOnboarded, consumedCalories, completeOnboarding, updateProfile, updateGoals, addConsumedCalories, getActiveFeatures, getGoalLabel, isFeatureActive]
+        [userProfile, hasOnboarded, consumedCalories, macros, loggedMeals, completeOnboarding, updateProfile, updateGoals, addLoggedMeal, getActiveFeatures, getGoalLabel, isFeatureActive]
     );
 
     return (

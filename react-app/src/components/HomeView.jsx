@@ -1,14 +1,23 @@
 import { useState } from 'react';
-import { Zap, Target, Utensils, Scale, ArrowRight, ScanBarcode, Dumbbell, Moon, Brain, HeartPulse } from 'lucide-react';
+import { Zap, Target, Utensils, Scale, ArrowRight, ScanBarcode, Dumbbell, Moon, Brain, HeartPulse, Footprints, CheckCircle2 } from 'lucide-react';
 import { useHealth } from '../context/HealthContext';
 
 export default function HomeView({ onTabChange, onSubViewChange }) {
-  const { userProfile, getGoalLabel, consumedCalories } = useHealth();
+  const { userProfile, getGoalLabel, consumedCalories, macros, loggedMeals } = useHealth();
+  const [currentDate] = useState(new Date());
+
+  const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const [selectedDayIndex, setSelectedDayIndex] = useState(currentDate.getDay());
+  const currentDayIndex = currentDate.getDay();
+
+  const dailyStepsGoal = 8000;
+  const currentSteps = 4231;
+  const stepsPercent = Math.min((currentSteps / dailyStepsGoal) * 100, 100);
 
   const mockMetrics = [
-    { id: 'weight', icon: Scale, label: 'Berat Badan', value: `${userProfile.currentWeight || 72} kg`, target: `Target: ${userProfile.targetWeight || 68} kg`, color: '#1f6e64', active: true },
-    { id: 'meals', icon: Utensils, label: 'Kalori', value: `${consumedCalories} kcal`, target: 'Target: 2000 kcal', color: '#e39b45', active: true }
-  ].filter(m => m.active);
+    { id: 'calories', icon: Utensils, label: 'Kalori', value: `${consumedCalories}`, target: `Target: 2000 kcal`, color: '#e39b45', active: true },
+    { id: 'weight', icon: Scale, label: 'Berat Badan', value: `${userProfile.currentWeight || 72} kg`, target: `Target: ${userProfile.targetWeight || 68} kg`, color: '#1f6e64', active: true }
+  ];
 
   const goalsText = userProfile.goals.length > 0
     ? userProfile.goals.map(g => getGoalLabel(g)).join(', ')
@@ -16,12 +25,17 @@ export default function HomeView({ onTabChange, onSubViewChange }) {
 
   return (
     <div className="screen-scroll h-full overflow-y-auto px-5 pt-5 pb-24 bg-slate-50">
-      <header className="flex justify-between items-center gap-4 mb-5">
+      <header className="flex justify-between items-center gap-4 mb-6">
         <div>
-          <p className="m-0 mb-1 uppercase text-xs tracking-wider text-slate-500 font-bold">
+          <p className="m-0 mb-1 uppercase text-[10px] tracking-wider text-slate-500 font-extrabold">
             AI-Health
           </p>
-          <h1 className="text-2xl leading-tight font-extrabold text-slate-900">Halo, {userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'} 👋</h1>
+          <h1 className="text-2xl leading-tight font-extrabold text-slate-900 mb-1">Halo, {userProfile.fullName ? userProfile.fullName.split(' ')[0] : 'Anda'} 👋</h1>
+          <p className="text-sm font-medium text-slate-500">
+            {userProfile.goals.includes('body-goals') 
+              ? 'Konsisten hari ini, bangga esok hari. Terus berjuang! 🔥' 
+              : 'Satu langkah kecil hari ini berarti besar untuk kesehatanmu. ✨'}
+          </p>
         </div>
         <button
           onClick={() => onTabChange('profile')}
@@ -31,38 +45,117 @@ export default function HomeView({ onTabChange, onSubViewChange }) {
         </button>
       </header>
 
-      {/* AI Briefing */}
-      <div className="bg-white border border-slate-100 shadow-sm rounded-3xl p-5 mb-5 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 mt-0.5">
-          <Zap size={20} />
+      {/* TOP WIDGET: Calendar & Gauge & Macros */}
+      <section className="bg-white rounded-3xl shadow-sm border border-slate-100 p-5 mb-6">
+        {/* Weekly Calendar Strip */}
+        <div className="flex justify-between items-center mb-6">
+          {daysOfWeek.map((day, idx) => (
+            <button 
+              key={idx} 
+              onClick={() => setSelectedDayIndex(idx)}
+              className={`w-8 h-12 flex flex-col items-center justify-center rounded-xl transition-all ${idx === selectedDayIndex ? 'bg-teal-600 text-white shadow-sm' : 'bg-transparent text-slate-400 hover:bg-slate-50'}`}
+            >
+              <span className="text-[10px] font-bold">{day}</span>
+              <span className={`text-xs font-extrabold mt-1 ${idx === selectedDayIndex ? 'text-white' : 'text-slate-800'}`}>
+                 {currentDate.getDate() - currentDayIndex + idx}
+              </span>
+            </button>
+          ))}
         </div>
-        <div>
-          <p className="text-xs font-bold text-teal-600 mb-1 uppercase tracking-wider">Insight Hari Ini</p>
-          <p className="text-sm text-slate-700 leading-relaxed font-medium">
-            {userProfile.goals.includes('body-goals')
-              ? 'Tingkatkan asupan protein hari ini untuk mendukung pembentukan otot Anda.'
-              : 'Jaga rutinitas sehat Anda. Jangan lupa minum air yang cukup!'}
-          </p>
-        </div>
-      </div>
 
-      {/* Focus Card */}
-      <section className="rounded-3xl p-6 text-white shadow-sm mb-6 bg-teal-600">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
-            <Target size={20} className="text-white" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-teal-100 uppercase tracking-wider">Fokus Anda</p>
-            <p className="text-sm font-bold text-white">{goalsText}</p>
+        {/* Semi-Circle Gauge Chart */}
+        <div className="flex flex-col items-center justify-center mb-6">
+          <div className="relative w-48 h-24 overflow-hidden">
+            <div className="absolute top-0 left-0 w-48 h-48 rounded-full border-[16px] border-slate-100 box-border" />
+            <div 
+              className="absolute top-0 left-0 w-48 h-48 rounded-full border-[16px] border-teal-500 box-border border-b-transparent border-r-transparent transition-all duration-1000"
+              style={{ transform: `rotate(${stepsPercent * 1.8 - 135}deg)` }}
+            />
+            <div className="absolute bottom-0 left-0 w-full flex flex-col items-center justify-end pb-2">
+              <span className="text-3xl font-extrabold text-slate-900 leading-none">{currentSteps.toLocaleString()}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">/ {dailyStepsGoal.toLocaleString()} langkah</span>
+            </div>
           </div>
         </div>
-        <p className="text-base font-bold leading-snug">Raih target kesehatan Anda dengan rekomendasi AI. 🚀</p>
+
+        {/* Macros */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-orange-50 rounded-2xl p-3 text-center">
+            <span className="block text-sm font-extrabold text-orange-500 mb-0.5">{macros.protein || 45}g</span>
+            <span className="block text-[10px] font-bold text-orange-800/60 uppercase">Protein</span>
+          </div>
+          <div className="bg-amber-50 rounded-2xl p-3 text-center">
+            <span className="block text-sm font-extrabold text-amber-500 mb-0.5">{consumedCalories} kcal</span>
+            <span className="block text-[10px] font-bold text-amber-800/60 uppercase">Kalori</span>
+          </div>
+          <div className="bg-indigo-50 rounded-2xl p-3 text-center">
+            <span className="block text-sm font-extrabold text-indigo-500 mb-0.5">{macros.fat || 35}g</span>
+            <span className="block text-[10px] font-bold text-indigo-800/60 uppercase">Lemak</span>
+          </div>
+        </div>
       </section>
 
-      {/* Metrics Grid */}
+      {/* LOGGED TODAY SECTION */}
+      {loggedMeals.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-3 px-1">Logged Today</h2>
+          <div className="space-y-3">
+            {loggedMeals.map((meal, idx) => (
+              <div key={idx} className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                  <Utensils size={20} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-slate-900">{meal.name}</h3>
+                  <p className="text-xs font-semibold text-slate-500">{meal.cal} kcal · {meal.prot}g P</p>
+                </div>
+                <CheckCircle2 size={20} className="text-teal-500 shrink-0" fill="#ccfbf1" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* QUICK MENU */}
       <section className="mb-6">
-        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Metrik Harian</h2>
+        <h2 className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-3 px-1">Quick Actions</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => onSubViewChange('food-scanner')}
+            className="p-4 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600">
+              <ScanBarcode size={20} />
+            </div>
+            <p className="text-xs font-bold text-slate-900">Scan Makanan</p>
+          </button>
+
+          {userProfile.goals.includes('body-goals') && (
+            <button
+              onClick={() => onSubViewChange('meal-planner')}
+              className="p-4 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
+                <Utensils size={20} />
+              </div>
+              <p className="text-xs font-bold text-slate-900">Meal Planner</p>
+            </button>
+          )}
+
+          {userProfile.goals.includes('mental-health') && (
+            <button
+              onClick={() => onSubViewChange('mood-tracker')}
+              className="p-4 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+                <Brain size={20} />
+              </div>
+              <p className="text-xs font-bold text-slate-900">Meditasi</p>
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* METRIK HARIAN */}
+      <section className="mb-6">
+        <h2 className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-3 px-1">Metrik Harian</h2>
         <div className="grid grid-cols-2 gap-3">
           {mockMetrics.map(metric => {
             const Icon = metric.icon;
@@ -72,64 +165,16 @@ export default function HomeView({ onTabChange, onSubViewChange }) {
                   <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center">
                     <Icon size={16} color={metric.color} strokeWidth={2.5} />
                   </div>
-                  <p className="text-xs font-bold text-slate-500">{metric.label}</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">{metric.label}</p>
                 </div>
                 <p className="text-lg font-extrabold text-slate-900 mb-0.5">{metric.value}</p>
-                <p className="text-xs text-slate-400 font-medium">{metric.target}</p>
+                <p className="text-[10px] text-slate-400 font-bold">{metric.target}</p>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* Quick Actions (Conditional for Body Goals) */}
-      {userProfile.goals.includes('body-goals') && (
-        <section className="mb-6">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Body Goals</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => onSubViewChange('meal-planner')}
-              className="p-5 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
-              <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
-                <Utensils size={20} />
-              </div>
-              <p className="text-sm font-bold text-slate-900">Meal Planner</p>
-            </button>
-            <button
-              onClick={() => onSubViewChange('fitness-routine')}
-              className="p-5 rounded-3xl bg-white border border-slate-100 flex flex-col items-start gap-3 transition-all active:scale-[0.98] shadow-sm">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500">
-                <Dumbbell size={20} />
-              </div>
-              <p className="text-sm font-bold text-slate-900">Fitness Planner</p>
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* Other Actions */}
-      <section>
-        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Eksplorasi</h2>
-        <div className="space-y-3">
-          <button
-            onClick={() => onSubViewChange('food-scanner')}
-            className="w-full flex items-center justify-between p-5 rounded-3xl bg-white shadow-sm border border-slate-100 transition-all active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
-                <ScanBarcode size={24} />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-slate-900">Pemindai Makanan</p>
-                <p className="text-xs text-slate-500 font-medium">Hitung kalori otomatis via kamera</p>
-              </div>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-              <ArrowRight size={16} />
-            </div>
-          </button>
-        </div>
-      </section>
     </div>
   );
 }
