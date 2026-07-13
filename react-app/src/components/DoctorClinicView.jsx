@@ -1,11 +1,6 @@
-import { useState } from 'react';
-import { useHealth } from '../context/HealthContext';
-import { MessageSquare, Phone, Calendar, AlertCircle } from 'lucide-react';
+import { MessageSquare, Phone, Calendar } from 'lucide-react';
 
-export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
-    const { userProfile, isFeatureActive } = useHealth();
-    const [activeTab, setActiveTab] = useState('consult');
-
+export default function DoctorClinicView({ onSubViewChange }) {
     const mockDoctors = [
         { id: 1, name: 'Dr. Sarah Chen', specialty: 'Kardiolog', rating: 4.9, available: 'Hari Ini 14:00', avatar: '👩‍⚕️', experience: '12 tahun' },
         { id: 2, name: 'Dr. James Wilson', specialty: 'Dokter Umum', rating: 4.8, available: 'Hari Ini 16:30', avatar: '👨‍⚕️', experience: '8 tahun' },
@@ -21,9 +16,7 @@ export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
                 <h1 className="text-2xl leading-tight font-[800]">Telemedis</h1>
             </header>
 
-            {/* Consultation Tab */}
-            {activeTab === 'consult' && (
-                <div className="space-y-4">
+            <div className="space-y-4">
 
                     {/* ── Find a Specialist ── */}
                     <button
@@ -102,8 +95,7 @@ export default function DoctorClinicView({ onTabChange, onSubViewChange }) {
                             ))}
                         </div>
                     </div>
-                </div>
-            )}
+            </div>
         </div>
     );
 }

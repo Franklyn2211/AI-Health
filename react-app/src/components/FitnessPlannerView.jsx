@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useHealth } from '../context/HealthContext';
+import { useHealth } from '../context/healthContextCore';
 import { ArrowLeft, Play, Pause, CheckCircle2, ChevronRight, Timer, Zap, Flame, Dumbbell } from 'lucide-react';
+import { buildAdaptiveTargets } from '../lib/adaptiveTargets';
 
 const WORKOUTS = {
   'pregnancy': {
@@ -117,13 +118,60 @@ const WORKOUTS = {
 };
 
 export default function FitnessPlannerView({ onBack, onTabChange }) {
-  const { userProfile } = useHealth();
+  const { userProfile, todayRecord, dailyRecords } = useHealth();
   const goals = userProfile.goals || [];
+  const adaptivePlan = buildAdaptiveTargets(userProfile, todayRecord, dailyRecords);
 
   const getPlan = () => {
     if (goals.includes('pregnancy')) return WORKOUTS['pregnancy'];
+    if (adaptivePlan.direction === 'gain' || adaptivePlan.direction === 'strength') {
+      return {
+        ...WORKOUTS['build-muscle'],
+        label: adaptivePlan.direction === 'gain' ? 'Naik massa' : 'Strength',
+        wod: {
+          ...WORKOUTS['build-muscle'].wod,
+          title: adaptivePlan.direction === 'gain' ? 'Strength Stimulus' : 'Strength Builder',
+          subtitle: adaptivePlan.direction === 'gain'
+            ? 'Latihan singkat untuk mendukung surplus kalori jadi massa otot'
+            : 'Latihan progresif sesuai target kekuatan',
+          duration: Number.parseInt(userProfile.availableTime, 10) <= 15 ? 22 : 40,
+          calories: adaptivePlan.targets.find((target) => target.id === 'burn')?.target || 140,
+        },
+        tips: `Kejar protein ${adaptivePlan.nutrition.proteinTarget}g dan makan setelah latihan agar target tubuh lebih efektif.`,
+      };
+    }
+    if (adaptivePlan.direction === 'lose') {
+      return {
+        ...WORKOUTS['body-goals'],
+        label: 'Diet support',
+        wod: {
+          ...WORKOUTS['body-goals'].wod,
+          title: 'Low Impact Fat Loss',
+          subtitle: 'Gerak aman untuk bantu defisit tanpa membuat lapar berlebihan',
+          duration: Number.parseInt(userProfile.availableTime, 10) <= 15 ? 15 : 30,
+          calories: adaptivePlan.targets.find((target) => target.id === 'burn')?.target || 220,
+        },
+        tips: `Target hari ini defisit ringan. Fokus jalan, gerak stabil, dan protein ${adaptivePlan.nutrition.proteinTarget}g.`,
+      };
+    }
+    if (['stress', 'mood', 'burnout', 'sleep'].includes(userProfile.focus)) {
+      return {
+        ...WORKOUTS['default'],
+        label: 'Mood reset',
+        accent: '#7c3aed',
+        wod: {
+          ...WORKOUTS['default'].wod,
+          title: 'Stress Reset Movement',
+          subtitle: 'Gerak ringan untuk menurunkan tegang dan menjaga ritme',
+          duration: 12,
+          intensity: 'Ringan',
+          calories: 80,
+        },
+        tips: 'Hari mental health tidak perlu berat. Cukup gerak ringan, napas, dan tidur lebih rapi.',
+      };
+    }
     if (goals.includes('build-muscle')) return WORKOUTS['build-muscle'];
-    if (goals.includes('lose-weight') || goals.includes('body-goals')) return WORKOUTS['body-goals'];
+    if (goals.includes('body-goals')) return WORKOUTS['body-goals'];
     if (goals.includes('heart-health')) return WORKOUTS['heart-health'];
     return WORKOUTS['default'];
   };

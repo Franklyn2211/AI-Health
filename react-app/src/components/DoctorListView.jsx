@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useHealth } from '../context/HealthContext';
+import { useHealth } from '../context/healthContextCore';
 import {
-  ArrowLeft, Star, Clock, Search, Filter,
-  MessageSquare, Calendar, ChevronRight, CheckCircle2, X,
+  ArrowLeft, Star, Clock, Search,
+  MessageSquare, Calendar, CheckCircle2, X,
 } from 'lucide-react';
 
 /* ─── Doctor Database ─────────────────────────────────── */

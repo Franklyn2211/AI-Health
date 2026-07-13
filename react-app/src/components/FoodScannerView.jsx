@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useHealth } from '../context/HealthContext';
+import { useState } from 'react';
+import { useHealth } from '../context/healthContextCore';
 import { ArrowLeft, Camera, Zap, CheckCircle2, RotateCcw, Utensils, Minus, Plus, PlusCircle, X, Flame, Clock } from 'lucide-react';
+import { buildAdaptiveTargets } from '../lib/adaptiveTargets';
+import FoodDiaryCard from './FoodDiaryCard';
 
 const SUGGESTED_FOODS = [
-    { id: 1, name: 'Dada Ayam Rebus', calories: 165, protein: 31, carbs: 0, fat: 3.6, tag: 'High Protein', goal: 'build-muscle', time: '15 mnt', ingredients: ['200g Dada Ayam', 'Air untuk merebus', 'Garam secukupnya'], steps: ['Didihkan air dalam panci.', 'Masukkan dada ayam dan beri sedikit garam.', 'Rebus selama 12-15 menit hingga matang.', 'Tiriskan dan potong sesuai selera.'] },
-    { id: 2, name: 'Telur Rebus', calories: 78, protein: 6, carbs: 0.6, fat: 5, tag: 'Keto Friendly', goal: 'default', time: '10 mnt', ingredients: ['2 butir Telur', 'Air'], steps: ['Rebus air hingga mendidih.', 'Masukkan telur secara perlahan.', 'Rebus selama 8-10 menit untuk tingkat kematangan pas.', 'Angkat dan rendam di air dingin sebelum dikupas.'] },
-    { id: 3, name: 'Salad Bayam + Salmon', calories: 350, protein: 30, carbs: 10, fat: 20, tag: 'Asam Folat', goal: 'pregnancy', time: '20 mnt', ingredients: ['1 ikat Bayam segar', '150g Ikan Salmon', 'Minyak Zaitun', 'Perasan Lemon'], steps: ['Panggang salmon dengan sedikit minyak zaitun hingga matang.', 'Cuci bersih bayam dan tiriskan.', 'Campur bayam dengan salmon yang sudah disuwir atau dipotong.', 'Beri perasan lemon sebagai dressing.'] },
-    { id: 4, name: 'Oatmeal Buah', calories: 250, protein: 7, carbs: 45, fat: 4, tag: 'Kaya Serat', goal: 'lose-weight', time: '10 mnt', ingredients: ['50g Rolled Oats', '150ml Susu Rendah Lemak', '1 buah Pisang', 'Buah Berries secukupnya'], steps: ['Campur oats dan susu di mangkuk.', 'Panaskan di microwave selama 2 menit (atau masak di panci kecil).', 'Potong-potong pisang dan tambahkan berries di atasnya.', 'Sajikan selagi hangat.'] }
+    { id: 1, name: 'Nasi Padang ayam pop', calories: 650, protein: 38, carbs: 72, fat: 22, tag: 'Halal', goal: 'default', time: 'Siap saji', priceRange: 'Rp 25-35rb', ingredients: ['Nasi putih', 'Ayam pop', 'Daun singkong', 'Sambal sedikit', 'Kuah dipisah'], steps: ['Pilih ayam pop atau ayam bakar.', 'Minta kuah santan dipisah.', 'Ambil daun singkong untuk serat.', 'Gunakan sambal secukupnya.'] },
+    { id: 2, name: 'Soto ayam bening', calories: 470, protein: 28, carbs: 52, fat: 14, tag: 'Ringan', goal: 'default', time: 'Siap saji', priceRange: 'Rp 18-25rb', ingredients: ['Soto ayam', 'Nasi setengah', 'Telur', 'Jeruk nipis'], steps: ['Pilih kuah bening.', 'Gunakan nasi setengah porsi.', 'Tambah telur untuk protein.', 'Batasi kerupuk bila sedang menjaga kalori.'] },
+    { id: 3, name: 'Gado-gado telur', calories: 520, protein: 24, carbs: 50, fat: 24, tag: 'Sayur', goal: 'default', time: 'Siap saji', priceRange: 'Rp 18-25rb', ingredients: ['Sayuran rebus', 'Telur', 'Lontong sedikit', 'Bumbu kacang setengah'], steps: ['Minta bumbu kacang setengah dulu.', 'Tambah telur untuk protein.', 'Kurangi lontong bila sudah makan nasi sebelumnya.'] },
+    { id: 4, name: 'Paket warteg ayam sayur', calories: 640, protein: 40, carbs: 72, fat: 20, tag: 'Seimbang', goal: 'build-strength', time: 'Siap saji', priceRange: 'Rp 20-28rb', ingredients: ['Nasi', 'Ayam bakar', 'Tempe', 'Sayur bening'], steps: ['Pilih satu protein utama.', 'Tambah satu lauk nabati seperti tempe.', 'Pilih sayur bening atau tumis ringan.', 'Sesuaikan porsi nasi dengan aktivitas hari ini.'] },
+    { id: 7, name: 'Nasi ayam telur tempe', calories: 760, protein: 48, carbs: 86, fat: 24, tag: 'Naik BB', goal: 'gain-weight', time: 'Siap saji', priceRange: 'Rp 24-32rb', ingredients: ['Nasi', 'Ayam bakar', 'Telur', 'Tempe', 'Sayur'], steps: ['Ambil nasi porsi normal.', 'Pilih dua sumber protein.', 'Tambah tempe untuk kalori dan protein murah.', 'Tetap ambil sayur agar pencernaan nyaman.'] },
+    { id: 5, name: 'Mie ayam porsi normal', calories: 560, protein: 28, carbs: 70, fat: 16, tag: 'Kontrol porsi', goal: 'default', time: 'Siap saji', priceRange: 'Rp 15-22rb', ingredients: ['Mie ayam', 'Ayam cincang', 'Sawi', 'Pangsit rebus'], steps: ['Pilih pangsit rebus dibanding goreng.', 'Tambah sawi bila tersedia.', 'Minum air putih, bukan minuman manis.'] },
+    { id: 6, name: 'Bakso kuah', calories: 430, protein: 24, carbs: 46, fat: 16, tag: 'Kuah hangat', goal: 'default', time: 'Siap saji', priceRange: 'Rp 15-25rb', ingredients: ['Bakso sapi', 'Bihun sedikit', 'Sawi', 'Kuah kaldu'], steps: ['Pilih bakso kuah tanpa gorengan tambahan.', 'Minta bihun sedikit.', 'Tambah sawi untuk serat.', 'Batasi saus dan kecap bila sensitif garam.'] }
 ];
 
 function MacroBar({ label, value, max, color }) {
@@ -25,10 +30,22 @@ function MacroBar({ label, value, max, color }) {
 }
 
 export default function FoodScannerView({ onBack }) {
-    const { userProfile, addLoggedMeal } = useHealth();
+    const { userProfile, todayRecord, dailyRecords, addLoggedMeal } = useHealth();
     const goals = userProfile.goals || [];
+    const focus = userProfile.focus || '';
+    const adaptivePlan = buildAdaptiveTargets(userProfile, todayRecord, dailyRecords);
     const isPregnancy = goals.includes('pregnancy');
-    const goals_cal = goals.includes('lose-weight') ? 1500 : goals.includes('build-muscle') ? 2800 : 2000;
+    const goals_cal = adaptivePlan.nutrition.calorieTarget;
+    const proteinGoal = adaptivePlan.nutrition.proteinTarget;
+    const carbGoal = adaptivePlan.nutrition.carbTarget;
+    const dietLabel = userProfile.diet || 'Halal (default)';
+    const scanAdvice = adaptivePlan.direction === 'gain'
+        ? 'Cari tambahan kalori berkualitas: telur, tempe, susu, kacang, atau nasi porsi normal.'
+        : adaptivePlan.direction === 'lose'
+            ? 'Utamakan protein dan sayur. Kurangi kuah santan, gorengan tambahan, dan minuman manis.'
+            : ['stress', 'mood', 'burnout', 'sleep'].includes(focus)
+                ? 'Pilih makanan hangat dan stabil energi. Jangan skip makan saat mood turun.'
+                : 'Gunakan hasil scan untuk menjaga porsi tetap sesuai target harian.';
 
     const [scanning, setScanning] = useState(false);
     const [scanned, setScanned] = useState([]);
@@ -38,7 +55,7 @@ export default function FoodScannerView({ onBack }) {
     const simulateScan = () => {
         setScanning(true);
         setTimeout(() => {
-            const mockDetect = { name: 'Nasi Goreng Spesial', calories: 450, protein: 15, carbs: 55, fat: 18, qty: 1 };
+            const mockDetect = { name: 'Nasi Padang ayam pop', calories: 650, protein: 38, carbs: 72, fat: 22, qty: 1, priceRange: 'Rp 25-35rb' };
             setScanned(prev => [mockDetect, ...prev]);
             setScanning(false);
             setLastAdded(mockDetect.name);
@@ -75,7 +92,9 @@ export default function FoodScannerView({ onBack }) {
         setTimeout(() => setLastAdded(null), 3000);
     };
 
-    const suggestedFoods = SUGGESTED_FOODS.filter(f => f.goal === 'default' || goals.includes(f.goal));
+    const suggestedFoods = SUGGESTED_FOODS.filter((food) => (
+        food.goal === 'default' || goals.includes(food.goal) || focus === food.goal
+    ));
 
     return (
         <div className="screen-scroll h-full overflow-y-auto px-5 pt-4 pb-24 bg-slate-50 relative">
@@ -87,6 +106,7 @@ export default function FoodScannerView({ onBack }) {
                 <div>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Scan</p>
                     <h1 className="text-xl font-extrabold text-slate-900">Pemindai Makanan</h1>
+                    <p className="mt-0.5 text-[11px] font-bold text-teal-700">{dietLabel} · porsi & harga Indonesia</p>
                 </div>
             </div>
 
@@ -136,13 +156,19 @@ export default function FoodScannerView({ onBack }) {
             {/* Macro Summary Card */}
             <section className="rounded-3xl bg-white shadow-sm border border-slate-100 p-6 mb-6">
                 <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Nutrisi Dideteksi</h2>
+                    <div>
+                        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Nutrisi Dideteksi</h2>
+                        <p className="mt-1 text-[11px] font-bold text-slate-500">Target {goals_cal} kcal · Protein {proteinGoal}g</p>
+                    </div>
                     {totals.cal > 0 && (
                         <button onClick={handleAddToDiary} className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm">
-                            <PlusCircle size={16} /> Add to Diary
+                            <PlusCircle size={16} /> Tambah ke Diary
                         </button>
                     )}
                 </div>
+                <p className="mb-4 rounded-2xl bg-teal-50 px-3 py-2 text-[11px] font-bold leading-relaxed text-teal-800">
+                    {scanAdvice}
+                </p>
 
                 {/* Calorie ring */}
                 <div className="flex items-center gap-5 mb-6">
@@ -158,8 +184,8 @@ export default function FoodScannerView({ onBack }) {
                         </span>
                     </div>
                     <div className="flex-1 space-y-3">
-                        <MacroBar label="Protein" value={totals.prot} max={goals.includes('build-muscle') ? 180 : 60} color="#f97316" />
-                        <MacroBar label="Karbo" value={totals.carbs} max={goals.includes('lose-weight') ? 150 : 250} color="#eab308" />
+                        <MacroBar label="Protein" value={totals.prot} max={proteinGoal} color="#f97316" />
+                        <MacroBar label="Karbo" value={totals.carbs} max={carbGoal} color="#eab308" />
                         <MacroBar label="Lemak" value={totals.fat} max={65} color="#8b5cf6" />
                     </div>
                 </div>
@@ -198,7 +224,10 @@ export default function FoodScannerView({ onBack }) {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-slate-900 truncate mb-1">{f.name}</p>
-                                    <p className="text-[11px] font-semibold text-slate-500">{f.calories * f.qty} kcal · P:{(f.protein * f.qty).toFixed(0)}g · K:{(f.carbs * f.qty).toFixed(0)}g</p>
+                                    <p className="text-[11px] font-semibold text-slate-500">
+                                        {f.calories * f.qty} kcal · P:{(f.protein * f.qty).toFixed(0)}g · K:{(f.carbs * f.qty).toFixed(0)}g
+                                        {f.priceRange ? ` · ${f.priceRange}` : ''}
+                                    </p>
                                 </div>
                                 <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
                                     <button onClick={() => setScanned(p => p.map((s, j) => j === i ? { ...s, qty: Math.max(1, s.qty - 1) } : s))}
@@ -217,6 +246,10 @@ export default function FoodScannerView({ onBack }) {
                 </section>
             )}
 
+            <div className="mb-6">
+                <FoodDiaryCard compact />
+            </div>
+
             {/* Suggested Foods for Goal */}
             <section>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -234,7 +267,9 @@ export default function FoodScannerView({ onBack }) {
                                     <p className="text-sm font-bold text-slate-900 truncate">{food.name}</p>
                                     <span className="text-[10px] bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded-lg shrink-0 border border-teal-100">{food.tag}</span>
                                 </div>
-                                <p className="text-[11px] font-medium text-slate-500">{food.calories} kcal · P:{food.protein}g · K:{food.carbs}g · L:{food.fat}g</p>
+                                <p className="text-[11px] font-medium text-slate-500">
+                                    {food.calories} kcal · P:{food.protein}g · K:{food.carbs}g · L:{food.fat}g · {food.priceRange}
+                                </p>
                             </div>
                             <button onClick={(e) => { e.stopPropagation(); addFood(food); }}
                                 className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-100 text-teal-600 flex items-center justify-center transition-all active:scale-90 shrink-0 hover:bg-teal-600 hover:text-white">
@@ -257,6 +292,9 @@ export default function FoodScannerView({ onBack }) {
                         <div className="flex flex-wrap gap-3 mb-4">
                             <span className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Flame size={16}/> {selectedFood.calories} kcal</span>
                             <span className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Clock size={16}/> {selectedFood.time || '15 mnt'}</span>
+                            {selectedFood.priceRange && (
+                                <span className="px-3 py-1.5 bg-teal-50 text-teal-700 rounded-xl text-sm font-bold">{selectedFood.priceRange}</span>
+                            )}
                         </div>
 
                         {selectedFood.ingredients && (
@@ -287,7 +325,7 @@ export default function FoodScannerView({ onBack }) {
                         )}
                         
                         <button onClick={() => { addFood(selectedFood); setSelectedFood(null); }} className="w-full h-14 bg-teal-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
-                            <PlusCircle size={20}/> Add to Scanned
+                            <PlusCircle size={20}/> Tambahkan ke Scan
                         </button>
                     </div>
                 </div>

@@ -1,56 +1,91 @@
-import { useState } from 'react';
-import { useHealth } from '../context/HealthContext';
+import { useMemo, useState } from 'react';
+import { useHealth } from '../context/healthContextCore';
 import { ArrowLeft, Camera, Plus, X, ChefHat, Sparkles, Clock, Flame, Utensils, Coffee, Sun, Moon, Apple, CalendarDays, CheckCircle, Stethoscope } from 'lucide-react';
+import { buildAdaptiveTargets } from '../lib/adaptiveTargets';
+import FoodDiaryCard from './FoodDiaryCard';
 
 const MEAL_DATABASE = {
   'body-goals': {
-    'Carnivore/High protein': {
-      dailyCal: 2800,
+    'Halal (default)': {
+      dailyCal: 2150,
       meals: {
-        breakfast: { title: 'Steak & Telur', time: '07:30', foods: [{ name: 'Sirloin 200g + 3 Telur Mata Sapi', cal: 650, prot: 55, carbs: 2, fat: 40 }] },
-        lunch: { title: 'Makan Siang Padat', time: '12:30', foods: [{ name: 'Dada Ayam 300g + Butter', cal: 550, prot: 65, carbs: 0, fat: 25 }] },
-        dinner: { title: 'Makan Malam Pemulihan', time: '19:00', foods: [{ name: 'Salmon Panggang 250g', cal: 500, prot: 50, carbs: 0, fat: 30 }] },
-        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Jerky Sapi', cal: 150, prot: 20, carbs: 2, fat: 5 }] },
+        breakfast: { title: 'Sarapan warteg ringan', time: '07:30', foods: [{ name: 'Nasi uduk porsi kecil + telur balado + timun', cal: 480, prot: 18, carbs: 58, fat: 18, estimatedPrice: 18000, note: 'Pilih porsi nasi setengah bila target turun berat badan.' }] },
+        lunch: { title: 'Makan siang Padang seimbang', time: '12:30', foods: [{ name: 'Nasi Padang ayam pop + daun singkong + kuah sedikit', cal: 650, prot: 38, carbs: 72, fat: 22, estimatedPrice: 28000, note: 'Minta kuah dipisah agar lemak dan garam lebih terkendali.' }] },
+        dinner: { title: 'Malam tinggi protein', time: '19:00', foods: [{ name: 'Soto ayam bening + nasi setengah + telur', cal: 520, prot: 34, carbs: 56, fat: 16, estimatedPrice: 22000, note: 'Pilih kuah bening dan tambah jeruk nipis, bukan kerupuk banyak.' }] },
+        snack: { title: 'Camilan lokal', time: '15:30', foods: [{ name: 'Pisang + kacang tanah sangrai', cal: 230, prot: 8, carbs: 32, fat: 8, estimatedPrice: 12000, note: 'Camilan murah untuk energi sebelum aktivitas.' }] },
+      }
+    },
+    'Halal': null,
+    'Tidak ada pantangan': null,
+    'Carnivore/High protein': {
+      dailyCal: 2300,
+      meals: {
+        breakfast: { title: 'Protein praktis', time: '07:30', foods: [{ name: 'Telur dadar 3 butir + tempe + lalap', cal: 520, prot: 36, carbs: 18, fat: 32, estimatedPrice: 20000 }] },
+        lunch: { title: 'Warteg tinggi protein', time: '12:30', foods: [{ name: 'Nasi setengah + ayam bakar + tahu + sayur asem', cal: 620, prot: 45, carbs: 55, fat: 20, estimatedPrice: 26000 }] },
+        dinner: { title: 'Makan malam pemulihan', time: '19:00', foods: [{ name: 'Ikan bakar + lalap + nasi setengah', cal: 540, prot: 42, carbs: 45, fat: 18, estimatedPrice: 30000 }] },
+        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Susu tinggi protein lokal', cal: 180, prot: 20, carbs: 12, fat: 5, estimatedPrice: 15000 }] },
       }
     },
     'Vegan': {
       dailyCal: 2200,
       meals: {
-        breakfast: { title: 'Tofu Scramble', time: '07:30', foods: [{ name: 'Tahu Orak-Arik + Bayam', cal: 350, prot: 22, carbs: 15, fat: 18 }] },
-        lunch: { title: 'Protein Bowl', time: '12:30', foods: [{ name: 'Quinoa + Edamame + Tempe', cal: 550, prot: 30, carbs: 65, fat: 15 }] },
-        dinner: { title: 'Makan Malam Vegan', time: '19:00', foods: [{ name: 'Lentil Curry + Nasi Merah', cal: 450, prot: 25, carbs: 60, fat: 10 }] },
-        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Protein Shake Vegan', cal: 200, prot: 25, carbs: 10, fat: 5 }] },
+        breakfast: { title: 'Sarapan nabati', time: '07:30', foods: [{ name: 'Bubur kacang hijau tanpa santan kental + pisang', cal: 390, prot: 14, carbs: 68, fat: 7, estimatedPrice: 14000 }] },
+        lunch: { title: 'Warteg nabati', time: '12:30', foods: [{ name: 'Nasi merah + tempe orek + sayur lodeh kuah sedikit', cal: 560, prot: 24, carbs: 78, fat: 16, estimatedPrice: 22000 }] },
+        dinner: { title: 'Makan malam vegan', time: '19:00', foods: [{ name: 'Gado-gado tanpa telur + bumbu kacang setengah', cal: 470, prot: 22, carbs: 52, fat: 18, estimatedPrice: 20000 }] },
+        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Tahu kukus + sambal kecap sedikit', cal: 180, prot: 14, carbs: 12, fat: 8, estimatedPrice: 10000 }] },
       }
     },
     'default': {
-      dailyCal: 2400,
+      dailyCal: 2150,
       meals: {
-        breakfast: { title: 'Sarapan Padat Protein', time: '07:30', foods: [{ name: 'Telur Orak-Arik (4 butir) + Roti Gandum', cal: 450, prot: 32, carbs: 35, fat: 20 }] },
-        lunch: { title: 'Makan Siang Post-Workout', time: '12:30', foods: [{ name: 'Dada Ayam (200g) + Nasi Putih', cal: 600, prot: 55, carbs: 70, fat: 8 }] },
-        dinner: { title: 'Makan Malam Pemulihan', time: '19:00', foods: [{ name: 'Daging Sapi Tanpa Lemak + Pasta', cal: 700, prot: 45, carbs: 80, fat: 15 }] },
-        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Protein Shake + Pisang', cal: 300, prot: 25, carbs: 40, fat: 2 }] },
+        breakfast: { title: 'Sarapan lokal', time: '07:30', foods: [{ name: 'Lontong sayur porsi kecil + telur', cal: 500, prot: 19, carbs: 62, fat: 18, estimatedPrice: 18000 }] },
+        lunch: { title: 'Makan siang warteg', time: '12:30', foods: [{ name: 'Nasi + ayam bakar + sayur bening + tempe', cal: 640, prot: 40, carbs: 72, fat: 20, estimatedPrice: 26000 }] },
+        dinner: { title: 'Malam sederhana', time: '19:00', foods: [{ name: 'Mie ayam porsi normal + pangsit rebus', cal: 560, prot: 28, carbs: 70, fat: 16, estimatedPrice: 22000 }] },
+        snack: { title: 'Camilan', time: '15:30', foods: [{ name: 'Buah potong + yogurt plain', cal: 210, prot: 9, carbs: 35, fat: 4, estimatedPrice: 16000 }] },
       }
     }
   },
   'mental-health': {
-    'default': {
-      dailyCal: 2000,
+    'Halal (default)': {
+      dailyCal: 1900,
       meals: {
-        breakfast: { title: 'Sarapan Mood Booster', time: '07:30', foods: [{ name: 'Oatmeal + Berries + Walnut', cal: 400, prot: 12, carbs: 55, fat: 16 }] },
-        lunch: { title: 'Omega-3 Lunch', time: '12:30', foods: [{ name: 'Salmon Salad + Olive Oil', cal: 450, prot: 35, carbs: 15, fat: 28 }] },
-        dinner: { title: 'Makan Malam Ringan', time: '19:00', foods: [{ name: 'Sup Labu + Roti Gandum', cal: 350, prot: 10, carbs: 60, fat: 8 }] },
-        snack: { title: 'Camilan Relaxing', time: '15:30', foods: [{ name: 'Dark Chocolate + Chamomile', cal: 150, prot: 2, carbs: 15, fat: 10 }] },
+        breakfast: { title: 'Sarapan stabil energi', time: '07:30', foods: [{ name: 'Bubur ayam tanpa cakwe + telur', cal: 430, prot: 24, carbs: 55, fat: 12, estimatedPrice: 18000, note: 'Lebih ringan saat mood atau tidur sedang turun.' }] },
+        lunch: { title: 'Makan siang anti lemas', time: '12:30', foods: [{ name: 'Gado-gado telur + lontong sedikit', cal: 520, prot: 24, carbs: 50, fat: 24, estimatedPrice: 22000, note: 'Minta bumbu kacang setengah agar tidak terlalu berat.' }] },
+        dinner: { title: 'Malam menenangkan', time: '19:00', foods: [{ name: 'Soto ayam bening + nasi setengah', cal: 470, prot: 28, carbs: 52, fat: 14, estimatedPrice: 20000, note: 'Kuah hangat dan protein cukup membantu rutinitas malam.' }] },
+        snack: { title: 'Camilan tenang', time: '15:30', foods: [{ name: 'Pisang + teh tawar hangat', cal: 130, prot: 2, carbs: 30, fat: 0, estimatedPrice: 8000 }] },
+      }
+    },
+    'Halal': null,
+    'Tidak ada pantangan': null,
+    'default': {
+      dailyCal: 1900,
+      meals: {
+        breakfast: { title: 'Sarapan mood stabil', time: '07:30', foods: [{ name: 'Roti gandum telur + pisang', cal: 410, prot: 18, carbs: 56, fat: 12, estimatedPrice: 18000 }] },
+        lunch: { title: 'Makan siang lokal', time: '12:30', foods: [{ name: 'Nasi pecel + telur + tempe', cal: 540, prot: 25, carbs: 62, fat: 20, estimatedPrice: 22000 }] },
+        dinner: { title: 'Makan malam ringan', time: '19:00', foods: [{ name: 'Sup ayam sayur + nasi setengah', cal: 430, prot: 28, carbs: 45, fat: 12, estimatedPrice: 20000 }] },
+        snack: { title: 'Camilan relaxing', time: '15:30', foods: [{ name: 'Pisang atau pepaya potong', cal: 120, prot: 1, carbs: 28, fat: 0, estimatedPrice: 8000 }] },
       }
     }
   },
   'immune-booster': {
-    'default': {
-      dailyCal: 2100,
+    'Halal (default)': {
+      dailyCal: 2000,
       meals: {
-        breakfast: { title: 'Vitamin C Start', time: '07:30', foods: [{ name: 'Smoothie Jeruk + Kiwi + Yogurt', cal: 300, prot: 15, carbs: 45, fat: 5 }] },
-        lunch: { title: 'Makan Siang Antioksidan', time: '12:30', foods: [{ name: 'Nasi Merah + Ayam Kunyit + Brokoli', cal: 550, prot: 35, carbs: 65, fat: 12 }] },
-        dinner: { title: 'Makan Malam Hangat', time: '19:00', foods: [{ name: 'Sup Ayam Jahe + Jamur', cal: 400, prot: 30, carbs: 25, fat: 15 }] },
-        snack: { title: 'Camilan Imun', time: '15:30', foods: [{ name: 'Kacang Almond + Teh Hijau', cal: 200, prot: 8, carbs: 10, fat: 15 }] },
+        breakfast: { title: 'Mulai hari', time: '07:30', foods: [{ name: 'Nasi kuning porsi kecil + telur + timun', cal: 480, prot: 18, carbs: 58, fat: 18, estimatedPrice: 18000 }] },
+        lunch: { title: 'Makan siang hangat', time: '12:30', foods: [{ name: 'Soto ayam + nasi setengah + jeruk', cal: 520, prot: 32, carbs: 56, fat: 15, estimatedPrice: 22000 }] },
+        dinner: { title: 'Makan malam rumah', time: '19:00', foods: [{ name: 'Nasi + ikan kembung + sayur asem', cal: 560, prot: 34, carbs: 60, fat: 18, estimatedPrice: 26000 }] },
+        snack: { title: 'Camilan imun', time: '15:30', foods: [{ name: 'Jambu biji potong', cal: 90, prot: 2, carbs: 20, fat: 1, estimatedPrice: 10000 }] },
+      }
+    },
+    'Halal': null,
+    'Tidak ada pantangan': null,
+    'default': {
+      dailyCal: 2000,
+      meals: {
+        breakfast: { title: 'Vitamin C lokal', time: '07:30', foods: [{ name: 'Bubur ayam + jeruk', cal: 460, prot: 24, carbs: 58, fat: 12, estimatedPrice: 20000 }] },
+        lunch: { title: 'Makan siang antioksidan', time: '12:30', foods: [{ name: 'Nasi merah + ayam kunyit + sayur bening', cal: 560, prot: 35, carbs: 65, fat: 12, estimatedPrice: 26000 }] },
+        dinner: { title: 'Makan malam hangat', time: '19:00', foods: [{ name: 'Sup ayam jahe + tahu + nasi setengah', cal: 430, prot: 30, carbs: 35, fat: 14, estimatedPrice: 22000 }] },
+        snack: { title: 'Camilan imun', time: '15:30', foods: [{ name: 'Kacang tanah sangrai + teh tawar', cal: 190, prot: 8, carbs: 10, fat: 13, estimatedPrice: 10000 }] },
       }
     }
   }
@@ -58,18 +93,127 @@ const MEAL_DATABASE = {
 
 const MEAL_ORDER = ['breakfast', 'snack', 'lunch', 'dinner'];
 const MEAL_ICONS = { breakfast: <Coffee size={18} />, snack: <Apple size={18} />, lunch: <Sun size={18} />, dinner: <Moon size={18} /> };
+const formatRupiah = (value) => new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  maximumFractionDigits: 0,
+}).format(value);
+
+const normalizeDietKey = (diet) => {
+  if (!diet || diet === 'Halal') return 'Halal (default)';
+  if (diet === 'Tidak ada pantangan') return 'default';
+  return diet;
+};
+
+const getPlanTone = (direction, focus) => {
+  if (direction === 'gain') return {
+    label: 'Surplus sehat',
+    title: 'Naik berat badan sehat',
+    note: 'Porsi dibuat lebih padat kalori dengan protein tinggi, bukan sekadar makanan manis.',
+  };
+  if (direction === 'lose') return {
+    label: 'Defisit ringan',
+    title: 'Diet realistis',
+    note: 'Porsi menjaga protein tinggi, kuah/saus dikontrol, dan karbo dibuat lebih sadar.',
+  };
+  if (focus === 'stress' || focus === 'mood' || focus === 'burnout' || focus === 'sleep') return {
+    label: 'Stabil energi',
+    title: 'Makan anti lemas',
+    note: 'Menu dibuat ringan, hangat, dan cukup protein agar mood dan energi tidak naik turun tajam.',
+  };
+  return {
+    label: 'Seimbang',
+    title: 'Rutinitas sehat',
+    note: 'Menu menjaga protein, sayur, hidrasi, dan porsi lokal yang mudah dicari.',
+  };
+};
+
+const scaleFood = (food, calorieFactor, proteinBoost = 0) => ({
+  ...food,
+  cal: Math.round(food.cal * calorieFactor),
+  prot: Math.round(food.prot + proteinBoost),
+  carbs: Math.round(food.carbs * calorieFactor),
+  fat: Math.round(food.fat * Math.min(calorieFactor, 1.15)),
+});
+
+function adaptMealPlan(basePlan, adaptivePlan, userProfile) {
+  const direction = adaptivePlan.direction;
+  const tone = getPlanTone(direction, userProfile.focus);
+  const factor = direction === 'gain' ? 1.18 : direction === 'lose' ? 0.82 : 1;
+  const proteinBoost = direction === 'gain' || direction === 'lose' || direction === 'strength' ? 6 : 0;
+  const meals = Object.fromEntries(Object.entries(basePlan.meals).map(([key, meal]) => [
+    key,
+    {
+      ...meal,
+      title: direction === 'gain' && key === 'snack' ? 'Camilan tambah kalori' : direction === 'lose' && key === 'dinner' ? 'Malam ringan tinggi protein' : meal.title,
+      foods: meal.foods.map((food) => ({
+        ...scaleFood(food, factor, proteinBoost),
+        note: direction === 'gain'
+          ? 'Tambah telur, tempe, alpukat, atau susu bila target kalori belum tercapai.'
+          : direction === 'lose'
+            ? 'Utamakan lauk protein, sayur, dan kurangi kuah santan/minuman manis.'
+            : food.note || tone.note,
+      })),
+    },
+  ]));
+
+  if (direction === 'gain') {
+    meals.snack = {
+      title: 'Camilan surplus',
+      time: '15:30',
+      foods: [{
+        name: 'Pisang + susu tinggi protein + kacang sangrai',
+        cal: 420,
+        prot: 28,
+        carbs: 52,
+        fat: 12,
+        estimatedPrice: 22000,
+        note: 'Cara murah menaikkan kalori tanpa membuat makan utama terlalu besar.',
+      }],
+    };
+  }
+
+  if (direction === 'lose') {
+    meals.breakfast = {
+      title: 'Sarapan kenyang ringan',
+      time: '07:30',
+      foods: [{
+        name: 'Bubur ayam tanpa cakwe + telur + teh tawar',
+        cal: 390,
+        prot: 30,
+        carbs: 45,
+        fat: 10,
+        estimatedPrice: 18000,
+        note: 'Protein tinggi membantu kenyang lebih lama tanpa defisit ekstrem.',
+      }],
+    };
+  }
+
+  return {
+    ...basePlan,
+    ...tone,
+    dailyCal: adaptivePlan.nutrition.calorieTarget,
+    proteinTarget: adaptivePlan.nutrition.proteinTarget,
+    carbTarget: adaptivePlan.nutrition.carbTarget,
+    fatTarget: adaptivePlan.nutrition.fatTarget,
+    meals,
+  };
+}
 
 export default function MealPlannerView({ onBack, onTabChange }) {
-  const { userProfile, addLoggedMeal } = useHealth();
+  const { userProfile, todayRecord, dailyRecords, addLoggedMeal } = useHealth();
   const [activeTab, setActiveTab] = useState('schedule');
   const [selectedMeal, setSelectedMeal] = useState(null);
+  const adaptivePlan = useMemo(() => (
+    buildAdaptiveTargets(userProfile, todayRecord, dailyRecords)
+  ), [dailyRecords, todayRecord, userProfile]);
 
   const [ingredients, setIngredients] = useState([]);
   const [inputVal, setInputVal] = useState('');
   const [scanning, setScanning] = useState(false);
   const [recipes, setRecipes] = useState([]);
 
-  const generateRecipes = (ingList) => {
+  const generateRecipes = (_ingList) => {
     return [
       {
         id: 1,
@@ -125,7 +269,7 @@ export default function MealPlannerView({ onBack, onTabChange }) {
   // Filter logic based on goals and diet methods
   const getPlan = () => {
     const goals = userProfile.goals || [];
-    const diet = userProfile.diet || 'default';
+    const diet = normalizeDietKey(userProfile.diet);
     
     let goalKey = 'body-goals'; // Default
     if (goals.includes('mental-health')) goalKey = 'mental-health';
@@ -133,14 +277,22 @@ export default function MealPlannerView({ onBack, onTabChange }) {
     if (goals.includes('body-goals')) goalKey = 'body-goals';
 
     const goalPlans = MEAL_DATABASE[goalKey] || MEAL_DATABASE['body-goals'];
-    return goalPlans[diet] || goalPlans['default'] || MEAL_DATABASE['body-goals']['default'];
+    const basePlan = goalPlans[diet] || goalPlans['default'] || MEAL_DATABASE['body-goals']['default'];
+    return adaptMealPlan(basePlan, adaptivePlan, userProfile);
   };
 
   const plan = getPlan();
 
   const handleAddToDiary = () => {
     if (selectedMeal) {
-      addLoggedMeal(selectedMeal);
+      addLoggedMeal({
+        name: selectedMeal.name,
+        cal: selectedMeal.cal || 0,
+        prot: selectedMeal.prot || 0,
+        carbs: selectedMeal.carbs || 0,
+        fat: selectedMeal.fat || 0,
+        source: 'meal-planner',
+      });
       setSelectedMeal(null);
     }
   };
@@ -153,7 +305,7 @@ export default function MealPlannerView({ onBack, onTabChange }) {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Meal Planner</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Meal Planner Indonesia</p>
           <h1 className="text-xl font-extrabold text-slate-900">Nutrisi & Resep</h1>
         </div>
       </div>
@@ -176,7 +328,38 @@ export default function MealPlannerView({ onBack, onTabChange }) {
               <span className="text-xs font-bold text-slate-500 uppercase ml-1">Kcal</span>
             </div>
           </div>
-          
+          <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase text-teal-700">Mode nutrisi AI</p>
+                <h2 className="mt-1 text-base font-extrabold text-slate-900">{plan.title}</h2>
+              </div>
+              <span className="rounded-lg bg-teal-50 px-2 py-1 text-[10px] font-extrabold text-teal-700">{plan.label}</span>
+            </div>
+            <p className="mt-2 text-xs font-bold leading-relaxed text-slate-600">{plan.note}</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {[
+                ['Protein', `${plan.proteinTarget}g`],
+                ['Karbo', `${plan.carbTarget}g`],
+                ['Lemak', `${plan.fatTarget}g`],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-xl bg-slate-50 px-3 py-2">
+                  <p className="text-[9px] font-extrabold uppercase text-slate-400">{label}</p>
+                  <p className="mt-1 text-sm font-extrabold text-slate-900">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mb-4 rounded-2xl border border-teal-100 bg-teal-50 p-3">
+            <p className="text-[10px] font-extrabold uppercase text-teal-700">Preferensi lokal</p>
+            <p className="mt-1 text-xs font-bold leading-relaxed text-teal-900">
+              {userProfile.diet || 'Halal (default)'} · estimasi harga Indonesia · porsi nasi bisa disesuaikan.
+            </p>
+          </div>
+          <div className="mb-4">
+            <FoodDiaryCard compact />
+          </div>
+
           <div className="space-y-4">
             {MEAL_ORDER.map(mealType => {
               const meal = plan.meals[mealType];
@@ -199,6 +382,18 @@ export default function MealPlannerView({ onBack, onTabChange }) {
                       <div className="flex justify-between items-start mb-2">
                         <p className="text-sm font-bold text-slate-900 leading-snug">{food.name}</p>
                         <span className="text-xs font-bold text-teal-700 shrink-0 bg-teal-100/50 px-2.5 py-1 rounded-xl">{food.cal} kcal</span>
+                      </div>
+                      <div className="mb-2 flex flex-wrap gap-2">
+                        {food.estimatedPrice && (
+                          <span className="rounded-lg bg-white px-2 py-1 text-[10px] font-extrabold text-slate-600">
+                            Est. {formatRupiah(food.estimatedPrice)}
+                          </span>
+                        )}
+                        {food.note && (
+                          <span className="rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
+                            {food.note}
+                          </span>
+                        )}
                       </div>
                       <div className="flex gap-4">
                         <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-400" /><span className="text-[10px] font-bold text-slate-600 uppercase">P: {food.prot}g</span></div>
@@ -246,7 +441,7 @@ export default function MealPlannerView({ onBack, onTabChange }) {
                 type="text"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
-                placeholder="Ketik bahan (contoh: Ayam, Telur...)"
+                placeholder="Ketik bahan (contoh: ayam, tempe, bayam...)"
                 className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 bg-white text-sm font-bold text-slate-900 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all shadow-sm"
               />
             </div>
@@ -344,7 +539,17 @@ export default function MealPlannerView({ onBack, onTabChange }) {
             <div className="flex flex-wrap gap-3 mb-4">
               <span className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Flame size={16}/> {selectedMeal.cal} kcal</span>
               <span className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold flex items-center gap-1.5"><Clock size={16}/> {selectedMeal.time || '15 mnt'}</span>
+              {selectedMeal.estimatedPrice && (
+                <span className="px-3 py-1.5 bg-teal-50 text-teal-700 rounded-xl text-sm font-bold">
+                  Est. {formatRupiah(selectedMeal.estimatedPrice)}
+                </span>
+              )}
             </div>
+            {selectedMeal.note && (
+              <p className="mb-4 rounded-2xl bg-amber-50 p-3 text-xs font-bold leading-relaxed text-amber-800">
+                {selectedMeal.note}
+              </p>
+            )}
 
             <div className="mb-4">
               <h3 className="text-xs font-bold text-slate-900 uppercase mb-2">Bahan-Bahan</h3>
@@ -370,7 +575,7 @@ export default function MealPlannerView({ onBack, onTabChange }) {
             </div>
             
             <button onClick={handleAddToDiary} className="w-full h-14 bg-teal-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
-              <CheckCircle size={20}/> Add to Diary
+              <CheckCircle size={20}/> Tambahkan ke Diary
             </button>
           </div>
         </div>

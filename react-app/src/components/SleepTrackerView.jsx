@@ -1,181 +1,279 @@
-import { useState } from 'react';
-import { ArrowLeft, Bell, Play, Pause, Settings2, CloudRain, Waves, Radio, Trees, Coffee, Flame, Moon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import {
+  AlarmClock,
+  ArrowLeft,
+  Check,
+  Info,
+  Moon,
+  RotateCcw,
+  Smartphone,
+  Sparkles,
+  Sun,
+} from 'lucide-react';
+import { useHealth } from '../context/healthContextCore';
 
-const SOUNDSCAPES = [
-  { id: 'rain', name: 'Hujan Lebat', Icon: CloudRain, desc: 'Menenangkan pikiran' },
-  { id: 'waves', name: 'Ombak Laut', Icon: Waves, desc: 'Relaksasi alami' },
-  { id: 'white', name: 'White Noise', Icon: Radio, desc: 'Blok gangguan' },
-  { id: 'forest', name: 'Hutan Malam', Icon: Trees, desc: 'Alam sunyi' },
-  { id: 'cafe', name: 'Kafe Tenang', Icon: Coffee, desc: 'Fokus & rileks' },
-  { id: 'fire', name: 'Api Unggun', Icon: Flame, desc: 'Hangat & nyaman' },
+const QUALITY_OPTIONS = [
+  { value: 1, label: 'Kurang' },
+  { value: 2, label: 'Cukup' },
+  { value: 3, label: 'Baik' },
 ];
 
-const SLEEP_STAGES = [
-  { label: 'Tidur Ringan', val: '2h 10m', pct: 30, color: '#14b8a6' },
-  { label: 'Deep Sleep', val: '2h 15m', pct: 30, color: '#1f6e64' },
-  { label: 'REM', val: '1h 45m', pct: 24, color: '#f59e0b' },
-  { label: 'Terjaga', val: '1h 10m', pct: 16, color: '#94a3b8' },
+const ROUTINE_ITEMS = [
+  'Kurangi layar sebelum tidur',
+  'Hindari kafein sore atau malam',
+  'Redupkan lampu kamar',
+  'Siapkan waktu bangun yang konsisten',
 ];
+
+function calculateDuration(bedtime, wakeTime) {
+  if (!bedtime || !wakeTime) return null;
+  const [bedHour, bedMinute] = bedtime.split(':').map(Number);
+  const [wakeHour, wakeMinute] = wakeTime.split(':').map(Number);
+  let minutes = (wakeHour * 60 + wakeMinute) - (bedHour * 60 + bedMinute);
+  if (minutes <= 0) minutes += 24 * 60;
+  return minutes;
+}
+
+function getDateKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getTomorrowKey() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return getDateKey(tomorrow);
+}
+
+function buildSleepImpact({ duration, quality, awakenings, rested }) {
+  const shortSleep = duration < 390;
+  const interrupted = awakenings >= 3;
+  const lowRecovery = quality === 1 || rested === 1 || shortSleep || interrupted;
+
+  if (lowRecovery) {
+    return {
+      status: 'Recovery rendah',
+      planMode: 'minimum',
+      tone: 'amber',
+      detail: 'AI menurunkan plan karena tidur kurang, sering terbangun, atau energi pagi rendah.',
+      tomorrow: 'Besok dimulai dari minimum mode: makan stabil, gerak ringan, dan wind-down lebih awal.',
+    };
+  }
+
+  if (duration >= 450 && quality >= 2 && rested >= 2) {
+    return {
+      status: 'Recovery cukup',
+      planMode: 'short',
+      tone: 'teal',
+      detail: 'Tidur cukup untuk menjalankan plan ringkas tanpa menambah tekanan.',
+      tomorrow: 'Besok tetap normal. AI menjaga target tetap realistis sesuai goal utama.',
+    };
+  }
+
+  return {
+    status: 'Recovery sedang',
+    planMode: 'short',
+    tone: 'sky',
+    detail: 'Tidur tidak buruk, tapi belum cukup kuat untuk target yang terlalu berat.',
+    tomorrow: 'Besok AI menjaga plan ringkas dan memprioritaskan recovery.',
+  };
+}
 
 export default function SleepTrackerView({ onBack }) {
-  const [smartWake, setSmartWake] = useState(true);
-  const [playing, setPlaying] = useState(null);
-  const score = 85;
-  const circumference = 2 * Math.PI * 44;
-  const dash = (score / 100) * circumference;
+  const { todayRecord, updateDailyRecord } = useHealth();
+  const existing = todayRecord.sleepDetails;
+  const [bedtime, setBedtime] = useState(existing?.bedtime || '22:30');
+  const [wakeTime, setWakeTime] = useState(existing?.wakeTime || '06:30');
+  const [quality, setQuality] = useState(existing?.quality || 2);
+  const [awakenings, setAwakenings] = useState(existing?.awakenings ?? 0);
+  const [rested, setRested] = useState(existing?.rested || 2);
+  const [routine, setRoutine] = useState(existing?.routine || []);
+  const [saved, setSaved] = useState(Boolean(existing));
+  const [impact, setImpact] = useState(existing?.planImpact || null);
+
+  const duration = useMemo(() => calculateDuration(bedtime, wakeTime), [bedtime, wakeTime]);
+  const durationLabel = duration
+    ? `${Math.floor(duration / 60)} jam ${duration % 60} menit`
+    : 'Belum lengkap';
+
+  const toggleRoutine = (item) => {
+    setRoutine((current) => (
+      current.includes(item)
+        ? current.filter((entry) => entry !== item)
+        : [...current, item]
+    ));
+  };
+
+  const saveSleep = () => {
+    if (!duration) return;
+    const planImpact = buildSleepImpact({ duration, quality, awakenings, rested });
+    updateDailyRecord((current) => ({
+      checkIn: {
+        energy: current.checkIn?.energy || rested,
+        mood: current.checkIn?.mood || 2,
+        sleep: quality,
+      },
+      planMode: planImpact.planMode === 'minimum' ? 'minimum' : current.planMode,
+      autoAdjustNote: planImpact.planMode === 'minimum'
+        ? 'Tidur/recovery rendah, jadi AI menurunkan target hari ini.'
+        : current.autoAdjustNote,
+      sleepDetails: {
+        bedtime,
+        wakeTime,
+        durationMinutes: duration,
+        quality,
+        awakenings,
+        rested,
+        routine,
+        planImpact,
+        source: 'self-reported',
+        recordedAt: new Date().toISOString(),
+      },
+    }));
+    updateDailyRecord((current) => ({
+      ...current,
+      planMode: planImpact.planMode,
+      tomorrowAdjustment: {
+        reasonId: 'sleep',
+        reasonLabel: planImpact.status,
+        sourceDate: getDateKey(),
+        title: planImpact.status,
+        detail: planImpact.tomorrow,
+        carryOver: ['Recovery tidur'],
+        createdAt: new Date().toISOString(),
+      },
+      planGeneratedAt: new Date().toISOString(),
+    }), getTomorrowKey());
+    setImpact(planImpact);
+    setSaved(true);
+  };
+
+  const activeImpact = impact || existing?.planImpact;
 
   return (
-    <div className="screen-scroll h-full overflow-y-auto pb-24 bg-[#f8faf7]">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 mb-6">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center bg-white border border-[#e6f2ec] text-[#1f6e64] shadow-sm transition-all active:scale-95"
-        >
+    <div className="screen-scroll h-full overflow-y-auto bg-[#f7f8f5] px-5 pb-8 pt-4">
+      <header className="mb-5 flex items-center gap-3">
+        <button type="button" onClick={onBack} aria-label="Kembali" className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700">
           <ArrowLeft size={18} />
         </button>
-        <div className="text-center">
-          <p className="text-[10px] font-[850] text-[#61716c] uppercase tracking-widest"></p>
-          <h1 className="text-[17px] font-[800] text-[#253532]">Sleep Tracker</h1>
+        <div>
+          <p className="text-[10px] font-extrabold uppercase text-sky-700">Catatan semalam</p>
+          <h1 className="text-xl font-extrabold text-slate-900">Tidur tanpa wearable</h1>
         </div>
-        <button className="w-9 h-9 rounded-xl flex items-center justify-center bg-white border border-[#e6f2ec] text-[#1f6e64] shadow-sm transition-all active:scale-95">
-          <Settings2 size={17} />
-        </button>
-      </div>
+      </header>
 
-      {/* Sleep Score Ring */}
-      <section className="flex flex-col items-center mb-6 px-5">
-        <div className="relative w-44 h-44 mb-4">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-            {/* Track */}
-            <circle cx="50" cy="50" r="44" fill="none" stroke="#e6f2ec" strokeWidth="6" />
-            {/* Glow ring */}
-            <circle cx="50" cy="50" r="44" fill="none" stroke="url(#sleepGrad)" strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={`${(score / 100) * (2 * Math.PI * 44)} ${2 * Math.PI * 44}`} />
-            <defs>
-              <linearGradient id="sleepGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#1f6e64" />
-                <stop offset="100%" stopColor="#14b8a6" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[46px] font-[900] text-[#253532] leading-none">{score}</span>
-            <span className="text-[11px] text-[#61716c] font-[700] uppercase">Skor Tidur</span>
-          </div>
-        </div>
-
-        <h2 className="text-[24px] font-[800] text-[#253532] mb-0.5">7 jam 20 menit</h2>
-        <p className="text-[#61716c] text-[13px]">Total Waktu Tidur · Semalam</p>
-
-        <div className="flex items-center gap-2 mt-3 px-4 py-2 rounded-2xl bg-[#f0f9f7] border border-[#d4e8e4]">
-          <Moon size={18} className="text-[#1f6e64]" />
-          <p className="text-[12px] text-[#1f6e64] font-[700]">Tidur lebih baik 12% dari rata-rata minggu lalu</p>
-        </div>
+      <section className="mb-4 flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-3.5">
+        <Smartphone size={18} className="mt-0.5 shrink-0 text-sky-700" />
+        <p className="text-[11px] font-medium leading-relaxed text-sky-900">
+          Data ini berdasarkan laporanmu, bukan pengukuran medis. Ponsel tidak dapat menentukan fase tidur secara akurat.
+        </p>
       </section>
 
-      {/* Stage Breakdown */}
-      <section className="mx-5 rounded-3xl p-5 mb-5 bg-white shadow-sm border border-[#e6f2ec]">
-        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-4">Fase Tidur</h2>
-
-        {/* Bar chart */}
-        <div className="flex items-end gap-1.5 h-20 mb-4">
-          {SLEEP_STAGES.map(s => (
-            <div key={s.label} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full rounded-t-xl transition-all" style={{ height: `${s.pct * 2.4}px`, backgroundColor: s.color + 'dd' }} />
+      {saved ? (
+        <>
+          <section className="mb-4 rounded-2xl bg-slate-900 p-5 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase text-sky-300">Tidur tercatat</p>
+                <h2 className="mt-1 text-2xl font-extrabold">{durationLabel}</h2>
+                <p className="mt-1 text-xs font-medium text-slate-300">{bedtime} sampai {wakeTime} · Kualitas {quality}/3</p>
+              </div>
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10"><Moon size={22} className="text-sky-300" /></span>
             </div>
-          ))}
-        </div>
+          </section>
+          {activeImpact && (
+            <section className="mb-4 rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+                  {activeImpact.planMode === 'minimum' ? <RotateCcw size={18} /> : <Sparkles size={18} />}
+                </span>
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase text-sky-700">Impact ke plan</p>
+                  <h2 className="mt-1 text-sm font-extrabold text-slate-900">{activeImpact.status}</h2>
+                  <p className="mt-1 text-xs font-bold leading-relaxed text-slate-600">{activeImpact.detail}</p>
+                  <p className="mt-2 rounded-xl bg-sky-50 px-3 py-2 text-[11px] font-bold leading-relaxed text-sky-900">{activeImpact.tomorrow}</p>
+                </div>
+              </div>
+            </section>
+          )}
+          <button type="button" onClick={() => setSaved(false)} className="mb-4 h-11 w-full rounded-xl border border-slate-200 bg-white text-xs font-extrabold text-slate-700">
+            Ubah catatan tidur
+          </button>
+        </>
+      ) : (
+        <>
+          <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+            <h2 className="text-sm font-extrabold text-slate-900">Waktu tidur</h2>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <label>
+                <span className="mb-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase text-slate-500"><Moon size={12} /> Mulai tidur</span>
+                <input type="time" value={bedtime} onChange={(event) => setBedtime(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-sky-500" />
+              </label>
+              <label>
+                <span className="mb-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase text-slate-500"><Sun size={12} /> Bangun</span>
+                <input type="time" value={wakeTime} onChange={(event) => setWakeTime(event.target.value)} className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-sky-500" />
+              </label>
+            </div>
+            <div className="mt-3 flex items-center gap-2 rounded-xl bg-sky-50 px-3 py-2.5">
+              <AlarmClock size={16} className="text-sky-700" />
+              <p className="text-xs font-extrabold text-sky-900">Perkiraan durasi: {durationLabel}</p>
+            </div>
+          </section>
 
-        <div className="grid grid-cols-2 gap-3">
-          {SLEEP_STAGES.map(s => (
-            <div key={s.label} className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-              <div className="min-w-0">
-                <p className="text-[10px] text-[#61716c] font-[800] uppercase tracking-wider">{s.label}</p>
-                <p className="text-[13px] font-[800] text-[#253532]">{s.val}</p>
+          <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+            <h2 className="text-sm font-extrabold text-slate-900">Bagaimana kualitasnya?</h2>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {QUALITY_OPTIONS.map((option) => (
+                <button key={option.value} type="button" onClick={() => setQuality(option.value)} className={`h-11 rounded-xl border text-xs font-extrabold ${quality === option.value ? 'border-sky-600 bg-sky-50 text-sky-800' : 'border-slate-200 bg-white text-slate-600'}`}>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-5">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-extrabold uppercase text-slate-500">Terbangun malam hari</p>
+                <span className="text-sm font-extrabold text-slate-900">{awakenings} kali</span>
+              </div>
+              <input type="range" min="0" max="5" value={awakenings} onChange={(event) => setAwakenings(Number(event.target.value))} className="mt-2 w-full accent-sky-600" />
+            </div>
+
+            <div className="mt-5">
+              <p className="text-[11px] font-extrabold uppercase text-slate-500">Energi saat bangun</p>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {QUALITY_OPTIONS.map((option) => (
+                  <button key={option.value} type="button" onClick={() => setRested(option.value)} className={`h-10 rounded-xl border text-xs font-bold ${rested === option.value ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-slate-200 bg-white text-slate-600'}`}>
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      {/* Smart Alarm */}
-      <section className="mx-5 rounded-3xl p-5 mb-5 bg-white shadow-sm border border-[#e6f2ec]">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#f0f9f7] flex items-center justify-center">
-              <Bell size={18} className="text-[#1f6e64]" />
+          <section className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+            <h2 className="text-sm font-extrabold text-slate-900">Rutinitas tadi malam</h2>
+            <div className="mt-3 space-y-2">
+              {ROUTINE_ITEMS.map((item) => (
+                <button key={item} type="button" onClick={() => toggleRoutine(item)} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left">
+                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${routine.includes(item) ? 'border-teal-600 bg-teal-600 text-white' : 'border-slate-300 text-transparent'}`}><Check size={12} strokeWidth={3} /></span>
+                  <span className="text-[11px] font-bold text-slate-700">{item}</span>
+                </button>
+              ))}
             </div>
-            <h2 className="text-[15px] font-[800] text-[#253532]">Smart Alarm</h2>
-          </div>
-          <button className="text-[#61716c] transition-all active:scale-95">
-            <Settings2 size={18} />
+          </section>
+
+          <button type="button" onClick={saveSleep} className="h-12 w-full rounded-xl border-0 bg-sky-700 text-sm font-extrabold text-white">
+            Simpan catatan tidur
           </button>
-        </div>
-        <p className="text-[46px] font-[900] text-[#253532] text-center mb-2">07:30</p>
-        <div className="flex items-center justify-between pt-3 border-t border-[#e6f2ec]">
+        </>
+      )}
+
+      <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><Info size={18} /></span>
           <div>
-            <p className="text-[13px] font-[800] text-[#253532]">Smart Wake-Up</p>
-            <p className="text-[11px] text-[#61716c] mt-0.5">Bangun saat tidur paling ringan</p>
+            <h2 className="text-sm font-extrabold text-slate-900">Apa yang akan dipelajari?</h2>
+            <p className="mt-1 text-xs font-medium leading-relaxed text-slate-500">Setelah beberapa hari, Weekly Insights dapat membandingkan durasi, kualitas, energi pagi, dan rutinitasmu tanpa mengklaim fase tidur yang tidak diukur.</p>
           </div>
-          <button
-            onClick={() => setSmartWake(w => !w)}
-            className={`w-14 h-7 rounded-full p-1 transition-colors duration-300 ${smartWake ? 'bg-[#1f6e64]' : 'bg-[#e6f2ec]'}`}
-            role="switch"
-            aria-checked={smartWake}
-          >
-            <div className={`w-5 h-5 rounded-full bg-white transition-transform duration-300 shadow-sm ${smartWake ? 'translate-x-7' : 'translate-x-0'}`} />
-          </button>
-        </div>
-      </section>
-
-      {/* Sleep Tips */}
-      <section className="mx-5 rounded-3xl p-5 mb-5 bg-white shadow-sm border border-[#e6f2ec]">
-        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-3">Rekomendasi Malam Ini</h2>
-        <div className="space-y-3">
-          {[
-            { time: '21:00', tip: 'Matikan layar & redupkan lampu', done: true },
-            { time: '21:30', tip: 'Mulai sesi meditasi 10 menit', done: false },
-            { time: '22:00', tip: 'Atur suhu kamar 18–20°C', done: false },
-          ].map((t, i) => (
-            <div key={i} className={`flex items-center gap-3 ${t.done ? 'opacity-40' : ''}`}>
-              <span className="text-[11px] font-[850] text-[#61716c] w-10 shrink-0">{t.time}</span>
-              <div className="flex-1 h-px bg-[#e6f2ec]" />
-              <p className="text-[12px] font-[700] text-[#253532] text-right">{t.tip}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Soundscapes */}
-      <section className="px-5">
-        <h2 className="text-[13px] font-[850] text-[#253532] uppercase mb-4">Soundscapes</h2>
-        <div className="grid grid-cols-3 gap-2">
-          {SOUNDSCAPES.map(s => {
-            const isPlaying = playing === s.id;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setPlaying(isPlaying ? null : s.id)}
-                className={`flex flex-col items-center gap-2 p-3.5 rounded-2xl border transition-all active:scale-[0.98] ${isPlaying
-                    ? 'border-[#1f6e64] bg-[#f0f9f7] shadow-sm'
-                    : 'border-[#e6f2ec] bg-white'
-                  }`}
-              >
-                <s.Icon size={24} className={isPlaying ? 'text-[#1f6e64]' : 'text-[#61716c]'} strokeWidth={isPlaying ? 2.5 : 2} />
-                <p className={`text-[10px] font-[800] text-center leading-tight ${isPlaying ? 'text-[#1f6e64]' : 'text-[#61716c]'}`}>
-                  {s.name}
-                </p>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${isPlaying ? 'bg-[#1f6e64]' : 'bg-[#f8faf7] border border-[#e6f2ec]'}`}>
-                  {isPlaying
-                    ? <Pause size={12} fill="white" className="text-[#1f6e64]" />
-                    : <Play size={12} className="text-[#61716c] ml-0.5" />}
-                </div>
-              </button>
-            );
-          })}
         </div>
       </section>
     </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Moon, Bell, Play, Pause, Settings2 } from 'lucide-react';
+import { Bell, Play, Pause, Settings2 } from 'lucide-react';
 
 export default function SleepView({ onTabChange }) {
   const [smartWake, setSmartWake] = useState(true);

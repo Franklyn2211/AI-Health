@@ -1,10 +1,10 @@
-import { Home, Activity, MessageCircle, Stethoscope, User, Bot } from 'lucide-react';
+import { Bot, CalendarDays, ClipboardList, Stethoscope, User } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: 'home', label: 'Beranda', Icon: Home },
-  { id: 'lifestyle', label: 'Gaya Hidup', Icon: Activity },
+  { id: 'home', label: 'Hari Ini', Icon: CalendarDays },
+  { id: 'plan', label: 'Plan', Icon: ClipboardList },
   { id: 'ai', label: 'AI', isCenter: true },
-  { id: 'clinic', label: 'Tim Ahli', Icon: Stethoscope },
+  { id: 'clinic', label: 'Perawatan', Icon: Stethoscope },
   { id: 'profile', label: 'Profil', Icon: User },
 ];
 
@@ -23,11 +23,11 @@ export default function BottomNav({ activeTab, onTabChange }) {
               key={id}
               id={`nav-${id}`}
               onClick={() => onTabChange(id)}
-              className="relative -mt-[28px] text-white overflow-visible border-0 bg-transparent flex flex-col items-center justify-center gap-[4px] text-[11px] font-[850] transition-all duration-300 ease-in-out active:scale-95"
-              aria-label="Konsultasi AI"
+              className="relative -mt-[28px] overflow-visible border-0 bg-transparent text-slate-700 flex flex-col items-center justify-center gap-[4px] text-[11px] font-[850] transition-all duration-300 ease-in-out active:scale-95"
+              aria-label="Asisten AI"
               aria-current={isActive ? 'page' : undefined}
             >
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#1f6e64] to-[#2c7a70] shadow-lg shadow-[#1f6e64]/50 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/25 flex items-center justify-center">
                 <Bot size={26} strokeWidth={2.5} />
               </div>
               {label}
